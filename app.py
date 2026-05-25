@@ -1,293 +1,450 @@
+import os
+import json
+import time
+from datetime import datetime
 import streamlit as st
-import random
 
-st.set_page_config(page_title="TiTA IA", page_icon="🎓", layout="wide")
+st.set_page_config(
+    page_title="TiTA IA",
+    page_icon="🎓",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-if "page" not in st.session_state:
-    st.session_state.page = "inicio"
-if "nombre" not in st.session_state:
-    st.session_state.nombre = ""
-if "tema" not in st.session_state:
-    st.session_state.tema = "Tecnologías emergentes"
-if "puntos" not in st.session_state:
-    st.session_state.puntos = 0
-if "nivel" not in st.session_state:
-    st.session_state.nivel = 1
-if "insignias" not in st.session_state:
-    st.session_state.insignias = []
-if "chat" not in st.session_state:
-    st.session_state.chat = [
-        ("TiTA", "¡Hola! Soy TiTA IA, tu acompañante académico inteligente. Estoy aquí para ayudarte a aprender de forma más dinámica, personalizada y motivadora.")
+# ---------- ESTILOS ----------
+st.markdown("""
+<style>
+:root {
+    --bg: #f6f4ef;
+    --card: #fffdf9;
+    --soft: #f0ebe2;
+    --line: #ddd4c8;
+    --text: #24211c;
+    --muted: #6f6a61;
+    --primary: #0f766e;
+    --primary-2: #115e59;
+    --accent: #eab308;
+    --success: #2e7d32;
+    --danger: #a61b4a;
+}
+
+html, body, [class*="css"]  {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+.stApp {
+    background:
+      radial-gradient(circle at top right, rgba(15,118,110,.08), transparent 24%),
+      radial-gradient(circle at bottom left, rgba(234,179,8,.08), transparent 22%),
+      var(--bg);
+    color: var(--text);
+}
+
+.block-container {
+    padding-top: 1.4rem;
+    padding-bottom: 1rem;
+    max-width: 1400px;
+}
+
+h1, h2, h3 {
+    color: var(--text);
+    letter-spacing: -0.02em;
+}
+
+.hero {
+    background: linear-gradient(135deg, #fffdf9 0%, #f3eee6 100%);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 1.3rem 1.4rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,.04);
+    margin-bottom: 1rem;
+}
+
+.hero-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: .35rem;
+}
+
+.hero-sub {
+    color: var(--muted);
+    font-size: 1rem;
+}
+
+.chip-row {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-top: .9rem;
+}
+
+.chip {
+    display: inline-block;
+    padding: .42rem .75rem;
+    border-radius: 999px;
+    background: #efe8db;
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-size: .88rem;
+    font-weight: 600;
+}
+
+.metric-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 1rem;
+}
+
+.metric-label {
+    color: var(--muted);
+    font-size: .85rem;
+}
+.metric-value {
+    font-size: 1.45rem;
+    font-weight: 800;
+}
+
+.feedback-box {
+    background: #fffaf0;
+    border: 1px dashed #e3c978;
+    border-radius: 16px;
+    padding: .9rem 1rem;
+    color: #634c10;
+    margin-top: .75rem;
+}
+
+.tita-bubble {
+    background: #fffdf9;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: .9rem 1rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,.03);
+}
+
+.user-bubble {
+    background: #dff3ef;
+    border: 1px solid #b7ddd7;
+    border-radius: 18px;
+    padding: .9rem 1rem;
+}
+
+.small-note {
+    color: var(--muted);
+    font-size: .84rem;
+}
+
+.sidebar-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: .85rem;
+    margin-bottom: .8rem;
+}
+
+.mission-box {
+    background: linear-gradient(135deg, #fff7db 0%, #fff3c1 100%);
+    border: 1px solid #edd67a;
+    border-radius: 18px;
+    padding: .95rem;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--line);
+    margin: .8rem 0 1rem 0;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ---------- ESTADO ----------
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {
+            "role": "assistant",
+            "content": "¡Hola! Soy **TiTA IA** 🎓✨ Tu compañera de estudio gamificada. Puedo ayudarte a comprender temas, planear tareas, repasar conceptos y mantener el ritmo con un tono claro, técnico y fresco. ¿Qué estás estudiando hoy?"
+        }
     ]
-if "estado" not in st.session_state:
-    st.session_state.estado = ""
-if "reto_actual" not in st.session_state:
-    st.session_state.reto_actual = ""
 
-retos = [
-    "Explica dos beneficios de usar inteligencia artificial en educación.",
-    "Menciona dos formas en que la gamificación puede mejorar la motivación estudiantil.",
-    "Describe cómo el aprendizaje adaptativo puede ayudar a un estudiante con dificultades de organización.",
-    "Propón una idea para usar TiTA IA en un entorno híbrido o virtual.",
-    "Escribe una recomendación para mejorar los hábitos de estudio con apoyo de un chatbot."
+if "points" not in st.session_state:
+    st.session_state.points = 20
+if "level" not in st.session_state:
+    st.session_state.level = 1
+if "streak" not in st.session_state:
+    st.session_state.streak = 1
+if "missions_done" not in st.session_state:
+    st.session_state.missions_done = []
+if "student_name" not in st.session_state:
+    st.session_state.student_name = "Estudiante"
+if "learning_mode" not in st.session_state:
+    st.session_state.learning_mode = "Equilibrado"
+if "difficulty" not in st.session_state:
+    st.session_state.difficulty = "Intermedio"
+
+# ---------- LÓGICA ----------
+mission_catalog = {
+    "Hacer una pregunta": {"points": 10, "badge": "Curiosidad activada"},
+    "Pedir un quiz": {"points": 15, "badge": "Modo reto"},
+    "Solicitar plan de estudio": {"points": 20, "badge": "Estratega"},
+    "Resolver una duda compleja": {"points": 25, "badge": "Pensamiento crítico"},
+}
+
+quick_prompts = [
+    "Explícame este tema fácil pero con rigor",
+    "Hazme un mini quiz de 5 preguntas",
+    "Ayúdame a estudiar en 20 minutos",
+    "Resume este concepto en puntos clave",
+    "Dame un ejemplo aplicado",
+    "Conviértelo en una actividad gamificada",
 ]
 
-def actualizar_gamificacion(extra=0):
-    st.session_state.puntos += extra
+def compute_level(points: int) -> int:
+    if points >= 180:
+        return 5
+    if points >= 120:
+        return 4
+    if points >= 75:
+        return 3
+    if points >= 35:
+        return 2
+    return 1
 
-    if st.session_state.puntos >= 20 and "Explorador" not in st.session_state.insignias:
-        st.session_state.insignias.append("Explorador")
-    if st.session_state.puntos >= 50 and "Aprendiz constante" not in st.session_state.insignias:
-        st.session_state.insignias.append("Aprendiz constante")
-    if st.session_state.puntos >= 80 and "Participación activa" not in st.session_state.insignias:
-        st.session_state.insignias.append("Participación activa")
-    if st.session_state.puntos >= 120 and "Maestro TiTA" not in st.session_state.insignias:
-        st.session_state.insignias.append("Maestro TiTA")
 
-    if st.session_state.puntos >= 120:
-        st.session_state.nivel = 4
-    elif st.session_state.puntos >= 80:
-        st.session_state.nivel = 3
-    elif st.session_state.puntos >= 40:
-        st.session_state.nivel = 2
+def award_points(reason: str):
+    if reason in mission_catalog and reason not in st.session_state.missions_done:
+        st.session_state.points += mission_catalog[reason]["points"]
+        st.session_state.missions_done.append(reason)
+        st.session_state.level = compute_level(st.session_state.points)
+        return f"🏅 Ganaste {mission_catalog[reason]['points']} puntos por: {reason}. Insignia: {mission_catalog[reason]['badge']}."
+    return None
+
+
+def detect_intent(user_text: str) -> str:
+    text = user_text.lower()
+    if any(k in text for k in ["quiz", "preguntas", "evalúame", "evaluame", "reto"]):
+        return "quiz"
+    if any(k in text for k in ["plan", "cronograma", "organiza", "estudio", "horario"]):
+        return "plan"
+    if any(k in text for k in ["resume", "resumen", "síntesis", "sintesis", "puntos clave"]):
+        return "summary"
+    if any(k in text for k in ["ejemplo", "aplicado", "caso"]):
+        return "example"
+    return "explain"
+
+
+def build_quiz(topic: str) -> str:
+    return f"""
+### 🎯 Mini quiz sobre {topic}
+1. ¿Cuál es la idea central de {topic}?
+2. ¿Qué problema resuelve o qué necesidad atiende?
+3. ¿Qué concepto técnico está más relacionado con {topic}?
+4. ¿Cómo se aplicaría {topic} en un contexto real?
+5. ¿Qué error común se debe evitar al trabajar este tema?
+
+**Modo pro:** responde una por una y yo te doy retroalimentación inmediata, breve y útil.
+"""
+
+
+def build_study_plan(topic: str) -> str:
+    return f"""
+### 🗂️ Plan express para estudiar {topic}
+**Bloque 1 — Activación (5 min):** escribe qué entiendes por {topic} y qué te confunde.
+**Bloque 2 — Comprensión (10 min):** identifica definición, características, ventajas y límites.
+**Bloque 3 — Aplicación (10 min):** crea un ejemplo real o académico.
+**Bloque 4 — Cierre (5 min):** resume {topic} en 3 ideas clave y 1 pregunta pendiente.
+
+**Tip TiTA:** si estudias en sesiones cortas pero consistentes, retienes mejor y reduces la saturación cognitiva.
+"""
+
+
+def build_summary(topic: str) -> str:
+    return f"""
+### ✍️ Resumen ágil de {topic}
+- Es un tema que conviene entender desde su **definición**, **función** y **aplicación**.
+- Para dominarlo, no basta memorizar: hay que relacionarlo con un caso, problema o escenario real.
+- Una buena respuesta académica sobre {topic} debería incluir concepto, contexto, ejemplo y reflexión crítica.
+- Si quieres, después lo convertimos en mapa conceptual, ficha de estudio o quiz.
+"""
+
+
+def build_example(topic: str) -> str:
+    return f"""
+### 💡 Ejemplo aplicado de {topic}
+Imagina un curso universitario donde el estudiantado necesita comprender {topic}. En vez de limitarse a teoría, el docente propone una actividad práctica, un caso real y una instancia de retroalimentación. Así, {topic} deja de ser una idea abstracta y se convierte en una herramienta para analizar, decidir y producir conocimiento.
+
+**Lectura técnica, pero fresca:** entender un concepto no es solo “saber qué dice”, sino poder usarlo con criterio.
+"""
+
+
+def fallback_response(user_text: str) -> str:
+    return f"""
+### 🧠 Vamos con toda
+Leí tu mensaje: **{user_text}**
+
+Puedo ayudarte de varias formas:
+- explicártelo paso a paso,
+- convertirlo en resumen,
+- diseñarte un quiz,
+- organizarte un mini plan de estudio,
+- o volverlo más académico para una entrega.
+
+**Versión TiTA:** dime si lo quieres en modo *claro*, *técnico*, *creativo* o *rápido*.
+"""
+
+
+def local_response(user_text: str) -> str:
+    bonus_msgs = []
+    bonus = award_points("Hacer una pregunta")
+    if bonus:
+        bonus_msgs.append(bonus)
+
+    intent = detect_intent(user_text)
+    topic = user_text.strip().capitalize()
+
+    if intent == "quiz":
+        extra = award_points("Pedir un quiz")
+        if extra:
+            bonus_msgs.append(extra)
+        body = build_quiz(topic)
+    elif intent == "plan":
+        extra = award_points("Solicitar plan de estudio")
+        if extra:
+            bonus_msgs.append(extra)
+        body = build_study_plan(topic)
+    elif intent == "summary":
+        body = build_summary(topic)
+    elif intent == "example":
+        body = build_example(topic)
     else:
-        st.session_state.nivel = 1
+        body = fallback_response(user_text)
 
-def responder(mensaje):
-    m = mensaje.lower()
+    energy = {
+        "Principiante": "Voy a explicártelo con base conceptual, vocabulario claro y ejemplos concretos.",
+        "Intermedio": "Voy a mantener un balance entre precisión conceptual y lenguaje cercano.",
+        "Avanzado": "Voy a responder con mayor densidad conceptual, relaciones críticas y aplicación académica."
+    }
 
-    if "motivado" in m or "bien" in m or "animado" in m:
-        return "¡Qué bueno! Cuando hay motivación, podemos aprovecharla con retos cortos, retroalimentación inmediata y metas claras para fortalecer tu aprendizaje."
-    elif "cansado" in m or "desmotivado" in m or "estresado" in m:
-        return "Entiendo. Podemos empezar con tareas pequeñas, dividir el estudio en pasos cortos y usar recompensas para recuperar el ritmo sin sobrecarga."
-    elif "gamificación" in m or "gamificacion" in m:
-        return "La gamificación aplica puntos, niveles, insignias y recompensas para aumentar la participación, el compromiso y la continuidad del aprendizaje."
-    elif "ia" in m or "inteligencia artificial" in m:
-        return "La inteligencia artificial en educación permite responder dudas, personalizar contenidos, ofrecer retroalimentación inmediata y acompañar procesos de autoaprendizaje."
-    elif "aprendizaje adaptativo" in m:
-        return "El aprendizaje adaptativo ajusta contenidos, dificultad y recomendaciones según el desempeño y las necesidades del estudiante."
-    elif "aprendizaje autónomo" in m or "autonomo" in m:
-        return "El aprendizaje autónomo se fortalece cuando el estudiante recibe orientación oportuna, metas claras, seguimiento y recursos personalizados."
-    elif "educación híbrida" in m or "hibrida" in m:
-        return "En educación híbrida, TiTA IA puede acompañar al estudiante dentro y fuera del aula, resolviendo dudas, proponiendo retos y dando seguimiento al progreso."
-    elif "motivación" in m or "motivar" in m:
-        return "Para fortalecer la motivación académica, es útil combinar metas pequeñas, refuerzo positivo, actividades breves y seguimiento visible del avance."
-    elif "tiempo" in m or "organización" in m:
-        return "Una estrategia útil es dividir el trabajo en sesiones cortas, priorizar tareas y usar recordatorios con objetivos concretos por día."
-    elif "reto" in m or "actividad" in m or "ejercicio" in m:
-        st.session_state.page = "reto"
-        st.session_state.reto_actual = random.choice(retos)
-        return "¡Perfecto! Te llevaré a un reto breve para seguir avanzando."
-    else:
-        return "Puedo ayudarte con motivación académica, gestión del tiempo, aprendizaje autónomo, IA en educación, gamificación, educación híbrida y aprendizaje adaptativo."
+    mode_line = {
+        "Visual y amigable": "🎨 Te lo presentaré de forma clara, ordenada y fácil de escanear.",
+        "Equilibrado": "⚖️ Mantendré un tono pedagógico, técnico y cercano.",
+        "Reto académico": "🚀 Subimos el nivel: más análisis, más síntesis y más exigencia intelectual."
+    }
 
-st.sidebar.title("📊 Panel TiTA")
-st.sidebar.metric("Puntos", st.session_state.puntos)
-st.sidebar.metric("Nivel", st.session_state.nivel)
+    suffix = ""
+    if bonus_msgs:
+        suffix = "\n\n---\n" + "\n".join([f"- {m}" for m in bonus_msgs])
 
-st.sidebar.write("### 🏅 Insignias")
-if st.session_state.insignias:
-    for ins in st.session_state.insignias:
-        st.sidebar.success(ins)
-else:
-    st.sidebar.info("Aún no tienes insignias.")
+    return f"{mode_line.get(st.session_state.learning_mode)}\n\n{energy.get(st.session_state.difficulty)}\n\n{body}{suffix}"
 
-st.sidebar.write("### 🎯 Estado actual")
-if st.session_state.estado:
-    st.sidebar.write(st.session_state.estado)
-else:
-    st.sidebar.write("Sin diagnóstico inicial")
 
-if st.session_state.page == "inicio":
-    st.title("🎓 TiTA IA")
-    st.subheader("Chatbot educativo gamificado para acompañamiento académico y aprendizaje adaptativo")
-    st.text_input("Escribe tu nombre", key="nombre")
-    st.selectbox(
-        "Selecciona un tema principal",
-        [
-            "Tecnologías emergentes",
-            "Aprendizaje autónomo",
-            "Motivación académica",
-            "Educación híbrida",
-            "Gamificación",
-            "IA en educación",
-            "Aprendizaje adaptativo"
-        ],
-        key="tema"
-    )
+# ---------- SIDEBAR ----------
+with st.sidebar:
+    st.markdown("<div class='sidebar-card'>", unsafe_allow_html=True)
+    st.markdown("### 🎮 Perfil TiTA")
+    st.text_input("Tu nombre", key="student_name")
+    st.selectbox("Modo de interacción", ["Visual y amigable", "Equilibrado", "Reto académico"], key="learning_mode")
+    st.selectbox("Nivel de profundidad", ["Principiante", "Intermedio", "Avanzado"], key="difficulty")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.write("### ¿Cómo te sientes hoy frente al estudio?")
-    col1, col2, col3 = st.columns(3)
-    if col1.button("Motivado"):
-        st.session_state.estado = "Motivado"
-        st.session_state.chat.append(("Tú", "Hoy me siento motivado"))
-        st.session_state.chat.append(("TiTA", responder("motivado")))
-        actualizar_gamificacion(10)
-    if col2.button("Cansado"):
-        st.session_state.estado = "Cansado"
-        st.session_state.chat.append(("Tú", "Hoy me siento cansado"))
-        st.session_state.chat.append(("TiTA", responder("cansado")))
-        actualizar_gamificacion(10)
-    if col3.button("Desmotivado"):
-        st.session_state.estado = "Desmotivado"
-        st.session_state.chat.append(("Tú", "Hoy me siento desmotivado"))
-        st.session_state.chat.append(("TiTA", responder("desmotivado")))
-        actualizar_gamificacion(10)
+    st.markdown("<div class='sidebar-card'>", unsafe_allow_html=True)
+    st.markdown("### 🧩 Misiones")
+    for m, info in mission_catalog.items():
+        done = "✅" if m in st.session_state.missions_done else "⬜"
+        st.write(f"{done} {m} (+{info['points']} pts)")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    if st.button("Entrar a TiTA"):
-        st.session_state.page = "chat"
+    st.markdown("<div class='mission-box'>", unsafe_allow_html=True)
+    st.markdown("### 🌟 Tip del día")
+    st.write("Combina preguntas cortas, repaso activo y mini retos para mejorar retención y motivación.")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    if st.button("🔄 Reiniciar conversación", use_container_width=True):
+        st.session_state.messages = [
+            {
+                "role": "assistant",
+                "content": "¡Reiniciamos! Soy TiTA IA 🎓✨ Lista para acompañarte otra vez. Cuéntame qué tema quieres trabajar."
+            }
+        ]
+        st.session_state.points = 20
+        st.session_state.level = 1
+        st.session_state.streak = 1
+        st.session_state.missions_done = []
         st.rerun()
 
-elif st.session_state.page == "chat":
-    st.title(f"Hola, {st.session_state.nombre or 'estudiante'} 👋")
-    st.write(f"**Tema principal:** {st.session_state.tema}")
-    st.write("### Conversación con TiTA")
+# ---------- CABECERA ----------
+st.markdown(f"""
+<div class='hero'>
+    <div class='hero-title'>TiTA IA · chatbot educativo gamificado</div>
+    <div class='hero-sub'>Acompañamiento académico interactivo, aprendizaje adaptativo y una experiencia más humana, fresca y útil.</div>
+    <div class='chip-row'>
+        <span class='chip'>🤖 IA conversacional</span>
+        <span class='chip'>🎯 Gamificación</span>
+        <span class='chip'>📚 Aprendizaje adaptativo</span>
+        <span class='chip'>💬 Feedback inmediato</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-    for autor, mensaje in st.session_state.chat:
-        if autor == "TiTA":
-            st.markdown(f"**🤖 {autor}:** {mensaje}")
-        else:
-            st.markdown(f"**🧑 {autor}:** {mensaje}")
+m1, m2, m3, m4 = st.columns(4)
+with m1:
+    st.markdown(f"<div class='metric-card'><div class='metric-label'>Estudiante</div><div class='metric-value'>{st.session_state.student_name}</div></div>", unsafe_allow_html=True)
+with m2:
+    st.markdown(f"<div class='metric-card'><div class='metric-label'>Puntos</div><div class='metric-value'>{st.session_state.points}</div></div>", unsafe_allow_html=True)
+with m3:
+    st.markdown(f"<div class='metric-card'><div class='metric-label'>Nivel</div><div class='metric-value'>Lv. {compute_level(st.session_state.points)}</div></div>", unsafe_allow_html=True)
+with m4:
+    st.markdown(f"<div class='metric-card'><div class='metric-label'>Misiones completas</div><div class='metric-value'>{len(st.session_state.missions_done)}</div></div>", unsafe_allow_html=True)
 
-    st.write("### Preguntas rápidas")
-    c1, c2, c3 = st.columns(3)
-    if c1.button("¿Qué es la gamificación?"):
-        q = "¿Qué es la gamificación?"
-        st.session_state.chat.append(("Tú", q))
-        st.session_state.chat.append(("TiTA", responder(q)))
-        actualizar_gamificacion(10)
-        st.rerun()
+st.markdown("<br>", unsafe_allow_html=True)
 
-    if c2.button("¿Cómo ayuda la IA?"):
-        q = "¿Cómo ayuda la IA en educación?"
-        st.session_state.chat.append(("Tú", q))
-        st.session_state.chat.append(("TiTA", responder(q)))
-        actualizar_gamificacion(10)
-        st.rerun()
-
-    if c3.button("Dame un reto"):
-        q = "Dame un reto"
-        st.session_state.chat.append(("Tú", q))
-        st.session_state.chat.append(("TiTA", responder(q)))
-        actualizar_gamificacion(10)
-        st.rerun()
-
-    c4, c5, c6 = st.columns(3)
-    if c4.button("Tengo poca motivación"):
-        q = "Necesito ayuda con motivación"
-        st.session_state.chat.append(("Tú", q))
-        st.session_state.chat.append(("TiTA", responder("motivación")))
-        actualizar_gamificacion(10)
-        st.rerun()
-
-    if c5.button("No organizo mi tiempo"):
-        q = "No organizo bien mi tiempo"
-        st.session_state.chat.append(("Tú", q))
-        st.session_state.chat.append(("TiTA", responder("tiempo")))
-        actualizar_gamificacion(10)
-        st.rerun()
-
-    if c6.button("¿Qué es aprendizaje adaptativo?"):
-        q = "¿Qué es aprendizaje adaptativo?"
-        st.session_state.chat.append(("Tú", q))
-        st.session_state.chat.append(("TiTA", responder(q)))
-        actualizar_gamificacion(10)
-        st.rerun()
-
-    c7, c8, c9 = st.columns(3)
-    if c7.button("Aprendizaje autónomo"):
-        q = "¿Cómo fortalecer el aprendizaje autónomo?"
-        st.session_state.chat.append(("Tú", q))
-        st.session_state.chat.append(("TiTA", responder("aprendizaje autónomo")))
-        actualizar_gamificacion(10)
-        st.rerun()
-
-    if c8.button("Educación híbrida"):
-        q = "¿Cómo funciona TiTA en educación híbrida?"
-        st.session_state.chat.append(("Tú", q))
-        st.session_state.chat.append(("TiTA", responder("educación híbrida")))
-        actualizar_gamificacion(10)
-        st.rerun()
-
-    if c9.button("Ver progreso"):
-        st.session_state.page = "progreso"
-        st.rerun()
-
-    mensaje_usuario = st.text_input("Escribe tu pregunta aquí")
-    if st.button("Enviar"):
-        if mensaje_usuario.strip():
-            st.session_state.chat.append(("Tú", mensaje_usuario))
-            st.session_state.chat.append(("TiTA", responder(mensaje_usuario)))
-            actualizar_gamificacion(15)
+# ---------- ATAJOS ----------
+st.markdown("#### ⚡ Atajos para empezar")
+qcols = st.columns(3)
+for i, prompt in enumerate(quick_prompts):
+    with qcols[i % 3]:
+        if st.button(prompt, use_container_width=True):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            reply = local_response(prompt)
+            st.session_state.messages.append({"role": "assistant", "content": reply})
             st.rerun()
 
-elif st.session_state.page == "reto":
-    st.title("⚡ Reto interactivo")
-    if not st.session_state.reto_actual:
-        st.session_state.reto_actual = random.choice(retos)
+st.markdown("<hr>", unsafe_allow_html=True)
 
-    st.write(st.session_state.reto_actual)
-    respuesta = st.text_area("Escribe tu respuesta")
-
-    if st.button("Enviar respuesta"):
-        if respuesta.strip():
-            actualizar_gamificacion(25)
-            st.success("¡Muy bien! Has completado el reto y ganado 25 puntos.")
-            st.write("Retroalimentación automática:")
-            st.info("Tu respuesta muestra comprensión del tema. TiTA recomienda continuar con una nueva consulta o revisar tu panel de progreso para identificar fortalezas y oportunidades de mejora.")
+# ---------- CHAT ----------
+st.markdown("#### 💬 Conversación")
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        if msg["role"] == "assistant":
+            st.markdown(f"<div class='tita-bubble'>{msg['content']}</div>", unsafe_allow_html=True)
         else:
-            st.warning("Debes escribir una respuesta antes de enviar.")
+            st.markdown(f"<div class='user-bubble'>{msg['content']}</div>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
-    if col1.button("Nuevo reto"):
-        st.session_state.reto_actual = random.choice(retos)
-        st.rerun()
+user_input = st.chat_input("Escribe tu pregunta, tema o tarea…")
 
-    if col2.button("Ir a progreso"):
-        st.session_state.page = "progreso"
-        st.rerun()
+if user_input:
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.markdown(f"<div class='user-bubble'>{user_input}</div>", unsafe_allow_html=True)
 
-elif st.session_state.page == "progreso":
-    st.title("🏆 Tu progreso de aprendizaje")
-    st.write(f"**Nombre:** {st.session_state.nombre or 'Estudiante'}")
-    st.write(f"**Tema principal:** {st.session_state.tema}")
-    st.write(f"**Estado inicial:** {st.session_state.estado if st.session_state.estado else 'No registrado'}")
-    st.write(f"**Puntos acumulados:** {st.session_state.puntos}")
-    st.write(f"**Nivel actual:** {st.session_state.nivel}")
+    with st.chat_message("assistant"):
+        with st.spinner("TiTA está pensando tu mejor ruta de aprendizaje…"):
+            time.sleep(0.6)
+            answer = local_response(user_input)
+            st.markdown(f"<div class='tita-bubble'>{answer}</div>", unsafe_allow_html=True)
+    st.session_state.messages.append({"role": "assistant", "content": answer})
+    st.session_state.level = compute_level(st.session_state.points)
 
-    progreso = min(st.session_state.puntos / 120, 1.0)
-    st.progress(progreso)
-
-    st.write("### Insignias obtenidas")
-    if st.session_state.insignias:
-        cols = st.columns(len(st.session_state.insignias))
-        for i, ins in enumerate(st.session_state.insignias):
-            cols[i].success(f"🏅 {ins}")
-    else:
-        st.info("Aún no has desbloqueado insignias.")
-
-    st.write("### Recomendación personalizada")
-    if st.session_state.estado == "Desmotivado":
-        st.warning("Te recomendamos iniciar con actividades breves, metas pequeñas y refuerzos positivos para recuperar la motivación.")
-    elif st.session_state.estado == "Cansado":
-        st.info("Te recomendamos organizar sesiones cortas de estudio, priorizar tareas y alternar entre consulta y práctica.")
-    else:
-        st.success("Tu nivel de disposición es favorable. Puedes avanzar a retos más complejos y profundizar en el aprendizaje adaptativo.")
-
-    st.write("### Próximo paso sugerido")
-    if st.session_state.puntos < 40:
-        st.info("Explora más preguntas rápidas para fortalecer la comprensión del tema.")
-    elif st.session_state.puntos < 80:
-        st.info("Ya tienes una buena base. Intenta completar nuevos retos y revisar el tema de educación híbrida.")
-    else:
-        st.info("Tu avance es sólido. Ahora puedes analizar cómo escalar TiTA IA hacia analítica de aprendizaje e integración con LMS.")
-
-    col1, col2 = st.columns(2)
-    if col1.button("Volver al chat"):
-        st.session_state.page = "chat"
-        st.rerun()
-
-    if col2.button("Reiniciar demo"):
-        for k in list(st.session_state.keys()):
-            del st.session_state[k]
-        st.rerun()
+# ---------- PIE / AYUDA ----------
+left, right = st.columns([1.2, 1])
+with left:
+    st.markdown("### 🛠️ Cómo mejorar el bot")
+    st.markdown("""
+- Conectar un modelo real vía API para respuestas más potentes.
+- Integrar base de datos para usuarios, progreso y analítica.
+- Añadir quizzes autocorregibles y tableros docentes.
+- Conectar con Moodle o LMS institucional.
+- Incorporar ranking, insignias y rutas de aprendizaje.
+""")
+with right:
+    st.markdown("### 📌 Nota técnica")
+    st.markdown("<div class='feedback-box'>Esta versión funciona como MVP interactivo en Streamlit con lógica local. Para convertirla en un asistente de IA completo, se puede enlazar con OpenAI, Claude o Gemini mediante variables de entorno y una capa de seguridad para datos educativos.</div>", unsafe_allow_html=True)
