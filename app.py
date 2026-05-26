@@ -607,4 +607,53 @@ elif st.session_state.page == "manual_ia":
     st.caption("Idea clave: usar IA de forma responsable también implica evitar interacciones innecesarias, pedir tareas concretas y aprovechar mejor cada consulta.")
 
     st.write("### 8. Regla TiTA de uso inteligente")
-    st.success("Pregunta con 
+    st.success("Pregunta con intención, aprende con criterio, contrasta con otras fuentes y conserva siempre tu protagonismo cognitivo.")
+
+    c1, c2 = st.columns(2)
+    if c1.button("Volver al chat desde manual"):
+        st.session_state.page = "chat"
+        st.rerun()
+    if c2.button("Ir al progreso desde manual"):
+        st.session_state.page = "progreso"
+        st.rerun()
+
+# =========================================
+# ANALÍTICA
+# =========================================
+elif st.session_state.page == "analitica":
+    st.title("📈 Analítica básica del aprendizaje")
+    st.write("Esta vista simula el seguimiento inicial del comportamiento del estudiante dentro del prototipo.")
+
+    st.metric("Total de interacciones", st.session_state.interacciones)
+    st.metric("Puntos obtenidos", st.session_state.puntos)
+    st.metric("Nivel alcanzado", st.session_state.nivel)
+
+    st.write("### Historial de interacción")
+    if st.session_state.historial:
+        conteo = {}
+        for item in st.session_state.historial:
+            conteo[item] = conteo.get(item, 0) + 1
+
+        for k, v in conteo.items():
+            st.write(f"- {k}: {v}")
+    else:
+        st.info("Aún no hay suficientes interacciones para mostrar datos.")
+
+    st.write("### Interpretación")
+    if st.session_state.interacciones < 3:
+        st.info("El estudiante presenta una exploración inicial. Se recomienda motivar más consultas y actividades breves.")
+    elif st.session_state.interacciones < 7:
+        st.info("El estudiante muestra participación moderada. Conviene fortalecer el seguimiento con retos y retroalimentación continua.")
+    else:
+        st.success("El estudiante evidencia una participación activa. El sistema podría escalar hacia un módulo más robusto de analítica del aprendizaje.")
+
+    st.write("### Proyección")
+    st.write("En una versión futura, este módulo podría conectarse con LMS, tableros docentes y reglas adaptativas más complejas.")
+
+    c1, c2 = st.columns(2)
+    if c1.button("Volver al chat desde analítica"):
+        st.session_state.page = "chat"
+        st.rerun()
+    if c2.button("Ir al progreso desde analítica"):
+        st.session_state.page = "progreso"
+        st.rerun()
