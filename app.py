@@ -1,7 +1,6 @@
 import streamlit as st
 import random
-import os
-from openai import OpenAI
+import google.generativeai as genai
 
 st.set_page_config(page_title="TiTA IA", page_icon="🎓", layout="wide")
 
@@ -63,15 +62,15 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =========================================
-# OPENAI CLIENTE
+# GEMINI CONFIG
 # =========================================
-api_key = None
-if "OPENAI_API_KEY" in st.secrets:
-    api_key = st.secrets["OPENAI_API_KEY"]
-elif os.getenv("OPENAI_API_KEY"):
-    api_key = os.getenv("OPENAI_API_KEY")
+gemini_api_key = None
 
-client = OpenAI(api_key=api_key) if api_key else None
+if "GEMINI_API_KEY" in st.secrets:
+    gemini_api_key = st.secrets["GEMINI_API_KEY"]
+
+if gemini_api_key:
+    genai.configure(api_key=gemini_api_key)
 
 # =========================================
 # ESTADO INICIAL
@@ -106,7 +105,6 @@ if "reto_actual" not in st.session_state:
 if "interacciones" not in st.session_state:
     st.session_state.interacciones = 0
 
-# Quiz secuencial
 if "quiz_index" not in st.session_state:
     st.session_state.quiz_index = 0
 if "quiz_score" not in st.session_state:
@@ -329,36 +327,38 @@ def recomendacion_del_dia():
     ]
     return random.choice(recomendaciones)
 
-def responder_con_openai(mensaje, tema, estado_animo):
-    if client is None:
-        return "No encontré una API key configurada. Agrega OPENAI_API_KEY en los secretos de Streamlit o en .streamlit/secrets.toml."
+def responder_con_gemini(mensaje, tema, estado_animo):
+    if not gemini_api_key:
+        return "No encontré una API key configurada. Agrega GEMINI_API_KEY en los Secrets de Streamlit."
 
     try:
-        prompt_sistema = f"""
+        model = genai.GenerativeModel("gemini-1.5-flash")
+
+        prompt = f"""
 Eres TiTA IA, un chatbot educativo gamificado.
 Responde en español, de forma clara, útil y pedagógica.
+
 Contexto del estudiante:
 - Tema principal: {tema}
 - Estado inicial: {estado_animo}
 
 Instrucciones:
 - Responde como tutor de apoyo.
-- Sé concreto pero explicativo.
-- Si aplica, sugiere una estrategia de estudio.
-- No inventes fuentes.
+- Sé claro, útil y con tono cercano.
+- Si aplica, sugiere una estrategia de estudio concreta.
+- No inventes bibliografía ni afirmes cosas falsas.
 - Si la pregunta se relaciona con motivación, organización del tiempo, IA, gamificación o aprendizaje autónomo, conecta tu respuesta con el propósito educativo de TiTA IA.
+
+Pregunta del estudiante:
+{mensaje}
 """
-        response = client.responses.create(
-            model="gpt-4.1-mini",
-            input=[
-                {"role": "system", "content": prompt_sistema},
-                {"role": "user", "content": mensaje}
-            ]
-        )
-        return response.output_text
+        respuesta = model.generate_content(prompt)
+        if hasattr(respuesta, "text") and respuesta.text:
+            return respuesta.text
+        return "Pude procesar la consulta, pero no recibí texto de respuesta. Intenta reformular la pregunta."
 
     except Exception as e:
-        return f"Ocurrió un error al consultar OpenAI: {e}"
+        return f"Ocurrió un error al consultar Gemini: {e}"
 
 def responder(mensaje):
     m = mensaje.lower()
@@ -409,7 +409,7 @@ Además, este mismo entorno usa gamificación con **insignias** para reconocer t
         st.session_state.page = "manual_ia"
         return "Claro. Te llevo al minimanual de uso responsable y ético de la IA para el aprendizaje."
     else:
-        return responder_con_openai(
+        return responder_con_gemini(
             mensaje,
             st.session_state.tema,
             st.session_state.estado_animo or "Sin registrar"
