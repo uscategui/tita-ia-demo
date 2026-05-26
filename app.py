@@ -1,5 +1,7 @@
 import streamlit as st
 import random
+import os
+from openai import OpenAI
 
 st.set_page_config(page_title="TiTA IA", page_icon="🎓", layout="wide")
 
@@ -61,6 +63,17 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =========================================
+# OPENAI CLIENTE
+# =========================================
+api_key = None
+if "OPENAI_API_KEY" in st.secrets:
+    api_key = st.secrets["OPENAI_API_KEY"]
+elif os.getenv("OPENAI_API_KEY"):
+    api_key = os.getenv("OPENAI_API_KEY")
+
+client = OpenAI(api_key=api_key) if api_key else None
+
+# =========================================
 # ESTADO INICIAL
 # =========================================
 if "page" not in st.session_state:
@@ -92,10 +105,6 @@ if "reto_actual" not in st.session_state:
     st.session_state.reto_actual = ""
 if "interacciones" not in st.session_state:
     st.session_state.interacciones = 0
-if "mostrar_recurso_tiempo" not in st.session_state:
-    st.session_state.mostrar_recurso_tiempo = False
-if "mostrar_recurso_motivacion" not in st.session_state:
-    st.session_state.mostrar_recurso_motivacion = False
 
 # Quiz secuencial
 if "quiz_index" not in st.session_state:
@@ -108,7 +117,7 @@ if "quiz_contestado" not in st.session_state:
     st.session_state.quiz_contestado = False
 
 # =========================================
-# DATOS DEL BOT
+# DATOS
 # =========================================
 retos_abiertos = [
     "Explica dos beneficios de integrar Inteligencia Artificial en educación.",
@@ -320,6 +329,37 @@ def recomendacion_del_dia():
     ]
     return random.choice(recomendaciones)
 
+def responder_con_openai(mensaje, tema, estado_animo):
+    if client is None:
+        return "No encontré una API key configurada. Agrega OPENAI_API_KEY en los secretos de Streamlit o en .streamlit/secrets.toml."
+
+    try:
+        prompt_sistema = f"""
+Eres TiTA IA, un chatbot educativo gamificado.
+Responde en español, de forma clara, útil y pedagógica.
+Contexto del estudiante:
+- Tema principal: {tema}
+- Estado inicial: {estado_animo}
+
+Instrucciones:
+- Responde como tutor de apoyo.
+- Sé concreto pero explicativo.
+- Si aplica, sugiere una estrategia de estudio.
+- No inventes fuentes.
+- Si la pregunta se relaciona con motivación, organización del tiempo, IA, gamificación o aprendizaje autónomo, conecta tu respuesta con el propósito educativo de TiTA IA.
+"""
+        response = client.responses.create(
+            model="gpt-4.1-mini",
+            input=[
+                {"role": "system", "content": prompt_sistema},
+                {"role": "user", "content": mensaje}
+            ]
+        )
+        return response.output_text
+
+    except Exception as e:
+        return f"Ocurrió un error al consultar OpenAI: {e}"
+
 def responder(mensaje):
     m = mensaje.lower()
 
@@ -369,7 +409,11 @@ Además, este mismo entorno usa gamificación con **insignias** para reconocer t
         st.session_state.page = "manual_ia"
         return "Claro. Te llevo al minimanual de uso responsable y ético de la IA para el aprendizaje."
     else:
-        return "Puedo ayudarte con IA en educación, gamificación, aprendizaje adaptativo, aprendizaje autónomo, motivación académica, productividad, organización del tiempo, educación híbrida y uso ético de la IA. ¿Por dónde quieres empezar?"
+        return responder_con_openai(
+            mensaje,
+            st.session_state.tema,
+            st.session_state.estado_animo or "Sin registrar"
+        )
 
 # =========================================
 # SIDEBAR
@@ -486,7 +530,6 @@ elif st.session_state.page == "chat":
     c4, c5, c6 = st.columns(3)
     if c4.button("Tengo poca motivación"):
         q = "Necesito apoyo con motivación"
-        st.session_state.mostrar_recurso_motivacion = True
         st.session_state.chat.append({"role": "user", "content": q})
         st.session_state.chat.append({"role": "assistant", "content": responder("motivación")})
         recompensar(10, -2)
@@ -495,7 +538,6 @@ elif st.session_state.page == "chat":
 
     if c5.button("No organizo mi tiempo"):
         q = "Necesito ayuda con organización del tiempo"
-        st.session_state.mostrar_recurso_tiempo = True
         st.session_state.chat.append({"role": "user", "content": q})
         st.session_state.chat.append({"role": "assistant", "content": responder("organización")})
         recompensar(10, -2)
@@ -675,10 +717,7 @@ elif st.session_state.page == "quiz":
             st.warning("Terminaste el quiz, pero conviene repasar temas como IA en educación, gamificación y uso responsable antes de seguir avanzando.")
 
         st.write("### ¿Qué sigue?")
-        st.write(
-            "Puedes volver al chat para resolver dudas, revisar las insignias o consultar los recursos especiales "
-            "para fortalecer tu comprensión de los temas."
-        )
+        st.write("Puedes volver al chat para resolver dudas, revisar las insignias o consultar los recursos especiales para fortalecer tu comprensión de los temas.")
 
         c1, c2 = st.columns(2)
         if c1.button("Volver al chat desde quiz"):
@@ -943,7 +982,6 @@ elif st.session_state.page == "analitica":
         conteo = {}
         for item in st.session_state.historial:
             conteo[item] = conteo.get(item, 0) + 1
-
         for k, v in conteo.items():
             st.write(f"- {k}: {v}")
     else:
