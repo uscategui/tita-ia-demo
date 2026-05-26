@@ -33,16 +33,24 @@ if "chat" not in st.session_state:
     ]
 if "reto_actual" not in st.session_state:
     st.session_state.reto_actual = ""
-if "quiz_pregunta" not in st.session_state:
-    st.session_state.quiz_pregunta = None
-if "quiz_respondido" not in st.session_state:
-    st.session_state.quiz_respondido = False
 if "interacciones" not in st.session_state:
     st.session_state.interacciones = 0
 if "mostrar_recurso_tiempo" not in st.session_state:
     st.session_state.mostrar_recurso_tiempo = False
 if "mostrar_recurso_motivacion" not in st.session_state:
     st.session_state.mostrar_recurso_motivacion = False
+
+# Quiz secuencial
+if "quiz_index" not in st.session_state:
+    st.session_state.quiz_index = 0
+if "quiz_score" not in st.session_state:
+    st.session_state.quiz_score = 0
+if "quiz_respuesta_actual" not in st.session_state:
+    st.session_state.quiz_respuesta_actual = None
+if "quiz_feedback" not in st.session_state:
+    st.session_state.quiz_feedback = ""
+if "quiz_contestado" not in st.session_state:
+    st.session_state.quiz_contestado = False
 
 # =========================================
 # DATOS DEL BOT
@@ -67,7 +75,7 @@ quizzes = [
             "Evitar toda interacción humana"
         ],
         "correcta": "Personalizar respuestas y acompañar al estudiante",
-        "retro": "Correcto. En TiTA IA, la IA se orienta a interpretar preguntas, generar respuestas contextualizadas y ofrecer acompañamiento personalizado."
+        "retro": "Correcto. En TiTA IA, la IA interpreta preguntas, genera respuestas contextualizadas y acompaña el proceso del estudiante."
     },
     {
         "pregunta": "¿Qué elemento corresponde a la gamificación?",
@@ -78,7 +86,7 @@ quizzes = [
             "Desconexión del progreso"
         ],
         "correcta": "Insignias y niveles",
-        "retro": "Muy bien. La gamificación se expresa mediante puntos, niveles, insignias y recompensas que fortalecen la participación."
+        "retro": "Muy bien. La gamificación se expresa mediante puntos, niveles, insignias y recompensas visibles."
     },
     {
         "pregunta": "¿Qué busca fortalecer TiTA IA principalmente?",
@@ -89,7 +97,7 @@ quizzes = [
             "La reducción del diálogo"
         ],
         "correcta": "El aprendizaje autónomo",
-        "retro": "Exacto. El proyecto busca fortalecer el aprendizaje autónomo mediante acompañamiento, motivación y personalización."
+        "retro": "Exacto. El núcleo del proyecto es fortalecer el aprendizaje autónomo mediante acompañamiento y personalización."
     },
     {
         "pregunta": "¿Qué aporta la educación híbrida al proyecto?",
@@ -100,7 +108,7 @@ quizzes = [
             "Evita el seguimiento"
         ],
         "correcta": "Combina escenarios presenciales y virtuales",
-        "retro": "Correcto. La educación híbrida permite que TiTA IA acompañe al estudiante dentro y fuera del aula."
+        "retro": "Correcto. La educación híbrida amplía el acompañamiento dentro y fuera del aula."
     },
     {
         "pregunta": "¿Qué busca el uso responsable de la IA en TiTA IA?",
@@ -111,7 +119,7 @@ quizzes = [
             "Que no exista revisión docente"
         ],
         "correcta": "Que la herramienta apoye sin anular el proceso cognitivo",
-        "retro": "Exactamente. El uso responsable de la IA implica apoyo, no reemplazo del pensamiento crítico, la autonomía ni la supervisión pedagógica."
+        "retro": "Exactamente. La IA debe ampliar capacidades, no reemplazar el juicio, la reflexión ni el contraste de fuentes."
     }
 ]
 
@@ -132,7 +140,7 @@ descripciones_insignias = {
         "valor": "Valora la iniciativa intelectual y la búsqueda activa de conocimiento."
     },
     "Jugador estratégico": {
-        "descripcion": "Reconoce a quienes combinan consultas, retos, quizzes y seguimiento de progreso.",
+        "descripcion": "Reconoce a quienes combinan consultas, retos, quiz y seguimiento de progreso.",
         "como": "Se obtiene al alcanzar 110 puntos.",
         "valor": "Refuerza el uso inteligente de las herramientas del sistema."
     },
@@ -146,33 +154,33 @@ descripciones_insignias = {
 metodos_productividad = {
     "Pomodoro": {
         "descripcion": "Trabajas durante 25 minutos con máxima concentración y luego descansas 5 minutos.",
-        "cuando_usarlo": "Ideal si te distraes fácil o necesitas comenzar con una estructura clara y amigable.",
+        "cuando_usarlo": "Ideal si te distraes fácil o necesitas comenzar con una estructura clara.",
         "ejemplo": "25 minutos leyendo o escribiendo + 5 minutos de pausa."
     },
     "Método Flowtime": {
-        "descripcion": "Trabajas de forma continua hasta notar fatiga o distracción, y luego defines la pausa según el tiempo real que estuviste concentrado/a.",
-        "cuando_usarlo": "Es ideal si entras en concentración profunda y no quieres cortar el ritmo con un cronómetro rígido.",
-        "ejemplo": "Si estudiaste 45 minutos con buena concentración, puedes tomar 10 minutos de descanso."
+        "descripcion": "Trabajas de forma continua hasta notar fatiga o distracción, y luego defines la pausa según el tiempo real de concentración.",
+        "cuando_usarlo": "Ideal si entras en concentración profunda y no quieres cortar el ritmo arbitrariamente.",
+        "ejemplo": "Si estudiaste 45 minutos con buena concentración, descansas 10."
     },
     "Método 50/10 o 52/17": {
-        "descripcion": "Consiste en estudiar entre 50 y 52 minutos con concentración total y luego descansar entre 10 y 17 minutos.",
-        "cuando_usarlo": "Sirve mucho para tareas largas, lecturas densas, epígrafes extensos o sesiones universitarias exigentes.",
-        "ejemplo": "50 minutos de lectura crítica + 10 minutos de pausa para moverte, hidratarte o despejarte."
+        "descripcion": "Estudias entre 50 y 52 minutos con concentración total y luego descansas entre 10 y 17 minutos.",
+        "cuando_usarlo": "Muy útil para lecturas largas, tareas densas y sesiones académicas exigentes.",
+        "ejemplo": "50 minutos de lectura crítica + 10 minutos de pausa."
     },
     "Técnica 90/20": {
         "descripcion": "Se basa en ciclos ultradianos: 90 minutos de trabajo intenso seguidos por 20 minutos de descanso real.",
-        "cuando_usarlo": "Es útil para personas con buena capacidad de atención sostenida o cuando necesitas hiperfoco.",
-        "ejemplo": "90 minutos desarrollando un trabajo o estudiando para examen + 20 minutos de desconexión total."
+        "cuando_usarlo": "Útil para personas con buena capacidad de atención sostenida.",
+        "ejemplo": "90 minutos desarrollando un trabajo + 20 minutos de desconexión total."
     },
     "Técnica 'Solo un poquito' (Kaizen)": {
-        "descripcion": "Consiste en empezar por una meta muy pequeña para reducir la resistencia psicológica al inicio.",
-        "cuando_usarlo": "Es perfecta si estás procrastinando o te cuesta mucho arrancar.",
-        "ejemplo": "Leer una sola página, escribir una idea o estudiar 5 minutos; luego decides si paras o sigues."
+        "descripcion": "Empiezas por una meta muy pequeña para reducir la resistencia psicológica al inicio.",
+        "cuando_usarlo": "Perfecta si estás procrastinando o te cuesta arrancar.",
+        "ejemplo": "Leer una sola página o estudiar 5 minutos."
     },
     "Bloques personalizados": {
-        "descripcion": "Ajustas la duración de las sesiones según tu energía y nivel de cansancio, en vez de usar una sola fórmula fija.",
-        "cuando_usarlo": "Es ideal si ya conoces tus ritmos y quieres combinar bloques largos y cortos estratégicamente.",
-        "ejemplo": "Empiezas con 90 minutos en tu momento de más energía y luego haces bloques de 50 o 25 minutos."
+        "descripcion": "Ajustas la duración de las sesiones según tu energía y cansancio, en vez de usar una sola fórmula fija.",
+        "cuando_usarlo": "Ideal si ya conoces tus ritmos de atención.",
+        "ejemplo": "Empiezas con 90 minutos y luego haces bloques de 50 o 25."
     }
 }
 
@@ -193,6 +201,20 @@ manual_motivacion = {
     ]
 }
 
+bibliografia_saber_mas = [
+    "Chou, Y. (2025). 10,000 Hours of Play: The Science of Gamification and Engagement. Octalysis Media.",
+    "Clark, G. (2025). The AI Primary Classroom: How to Use Artificial Intelligence to Enhance Learning in Primary Education. Routledge.",
+    "García, J. A., & Martínez, M. (2025). Chatbots en la enseñanza: Asistentes virtuales y aprendizaje ubicuo. Editorial Octaedro.",
+    "Harvard Business Review. (2025). The Year in Tech, 2026: The Insights You Need from Harvard Business Review. Harvard Business Review Press.",
+    "López, R. (2024). Chatbots educativos: Inteligencia artificial transformando el aprendizaje. Ediciones Gesvin.",
+    "Mollick, E. (2026). Co-Intelligence: Living and Working with AI. Virtual Enterprise Press.",
+    "Narayanan, A., & Kapoor, S. (2024). AI Snake Oil: What Artificial Intelligence Can Do, What It Can't, and How to Tell the Difference. Princeton University Press.",
+    "Rodríguez, A. (2025). Inteligencia artificial aplicada a la educación: Manual para docentes, estudiantes y directivos. Alpha Editorial.",
+    "Sánchez, M., & Torres, L. (2025). Manual de gamificación y AI en educación: Estrategias lúdicas digitales. Editorial Universitaria.",
+    "Springer Nature. (2026). Gamified Education: Innovating Learning Through Play and Technology. Springer International Publishing.",
+    "Suleyman, M., & Bhaskar, M. (2024). The Coming Wave: Technology, Power, and the Twenty-first Century's Greatest Dilemma. Crown Publishing Group."
+]
+
 # =========================================
 # FUNCIONES
 # =========================================
@@ -212,7 +234,6 @@ def actualizar_nivel():
 def actualizar_insignias():
     p = st.session_state.puntos
     badges = st.session_state.insignias
-
     if p >= 20 and "Explorador" not in badges:
         badges.append("Explorador")
     if p >= 50 and "Aprendiz constante" not in badges:
@@ -249,10 +270,27 @@ def responder(mensaje):
 
     if "hola" in m or "buenas" in m:
         return "¡Hola! Qué bueno tenerte aquí. Cuéntame, ¿quieres resolver una duda, hacer un reto o revisar estrategias para estudiar mejor?"
-    elif "ia" in m or "inteligencia artificial" in m:
-        return "La Inteligencia Artificial en TiTA IA permite interpretar preguntas, generar respuestas contextualizadas y ofrecer acompañamiento académico más flexible, inmediato y personalizado."
+    elif "cómo ayuda la ia" in m or "como ayuda la ia" in m or "ia en educación" in m:
+        return """La IA en educación puede aportar en varios niveles: 
+1) **Personalización**, porque adapta recomendaciones y respuestas según la necesidad del estudiante; 
+2) **Retroalimentación inmediata**, útil para resolver dudas en tiempo real; 
+3) **Acompañamiento continuo**, especialmente en entornos híbridos o virtuales; 
+4) **Organización del aprendizaje**, al sugerir rutas, prioridades y estrategias; 
+5) **Analítica**, al identificar patrones de interacción que luego pueden orientar mejoras pedagógicas. 
+
+Su valor no está en reemplazar al docente, sino en ampliar el acceso, ofrecer apoyo oportuno y hacer más flexible la experiencia formativa."""
     elif "gamificación" in m or "gamificacion" in m:
-        return "La gamificación incorpora puntos, niveles, insignias y recompensas para hacer del aprendizaje una experiencia más atractiva. De hecho, este mismo entorno usa gamificación con insignias para reconocer tu progreso. Si quieres, abajo puedes entrar a 'Ver insignias' para conocerlas mejor."
+        return """La gamificación es la incorporación de mecánicas del juego en contextos no lúdicos, como el aprendizaje. 
+En educación, esto puede incluir **puntos, insignias, niveles, retos, metas visibles, recompensas y sensación de progreso**. 
+
+Su fuerza pedagógica está en varios frentes: 
+1) aumenta la motivación y el compromiso; 
+2) hace visible el avance del estudiante; 
+3) favorece la continuidad y los hábitos; 
+4) transforma tareas que parecen pesadas en experiencias más dinámicas; 
+5) refuerza la participación mediante reconocimiento simbólico. 
+
+Además, este mismo entorno usa gamificación con **insignias** para reconocer tu progreso. Si quieres profundizar, puedes revisar la sección **Ver insignias** y también el recurso de **Saber más** al final."""
     elif "aprendizaje adaptativo" in m:
         return "El aprendizaje adaptativo ajusta recomendaciones, dificultad y orientación según el desempeño, el ritmo y las necesidades del estudiante. En TiTA IA esto se refleja en rutas de apoyo personalizadas."
     elif "aprendizaje autónomo" in m or "autonomo" in m:
@@ -260,32 +298,18 @@ def responder(mensaje):
     elif "educación híbrida" in m or "hibrida" in m:
         return "En educación híbrida, TiTA IA puede acompañar al estudiante tanto dentro como fuera del aula, integrando apoyo conversacional, retos y seguimiento en escenarios presenciales y virtuales."
     elif "motivación" in m or "motivar" in m:
-        return "Cuando la motivación baja, conviene reducir la barrera de inicio, usar recompensas visibles y apoyarte en técnicas concretas. Si quieres, abajo tienes el recurso especial 'Manual de técnicas de motivación' para explorar opciones útiles."
+        return "Cuando la motivación baja, conviene reducir la barrera de inicio, usar recompensas visibles y apoyarte en técnicas concretas. Abajo puedes entrar al recurso especial **Manual de técnicas de motivación** para explorar opciones útiles."
     elif "tiempo" in m or "organización" in m or "organizar" in m:
-        return "Claro. Puedo ayudarte con técnicas para organizar tu tiempo, como Pomodoro, Flowtime, 50/10, 90/20, Kaizen o bloques personalizados. Si quieres revisarlas, abajo tienes el recurso especial 'Métodos de productividad para organizar tu tiempo'."
-    elif "flowtime" in m:
-        return "El método Flowtime te permite estudiar hasta que notes fatiga o distracción y luego descansar según el tiempo real de concentración. Es flexible y muy útil cuando logras entrar en foco profundo."
-    elif "50/10" in m or "52/17" in m:
-        return "Este método propone bloques largos de enfoque y pausas suficientes para recuperarte. Es muy útil para lecturas largas, análisis y tareas universitarias exigentes."
-    elif "90/20" in m:
-        return "La técnica 90/20 se basa en ciclos ultradianos: 90 minutos de trabajo intenso y 20 de descanso real. Funciona mejor si tienes buena capacidad de atención sostenida."
-    elif "kaizen" in m or "solo un poquito" in m:
-        return "La técnica Kaizen busca reducir la resistencia al inicio: empiezas con una meta mínima y luego decides si continúas. Es excelente contra la procrastinación."
-    elif "pomodoro" in m:
-        return "Pomodoro es una técnica clásica y amigable: estudias 25 minutos y descansas 5. Sirve mucho para empezar cuando te cuesta concentrarte."
-    elif "bloques personalizados" in m:
-        return "Los bloques personalizados te permiten adaptar la duración del estudio a tus momentos de energía. No todos rinden igual con el mismo cronómetro."
-    elif "estrés" in m or "estres" in m or "cansado" in m:
-        return "Respiremos un poco 😌. Si te sientes saturado, empecemos por algo breve: una duda puntual, un quiz o un reto corto. Avanzar poco también cuenta."
+        return "Claro. Puedo ayudarte con técnicas para organizar tu tiempo, como Pomodoro, Flowtime, 50/10, 90/20, Kaizen o bloques personalizados. Abajo puedes abrir el recurso **Métodos de productividad para organizar tu tiempo**."
+    elif "quiero leer" in m or "leer" in m:
+        return "¡Qué buena idea! Abajo, en los recursos especiales, tienes el menú desplegable **Saber más**, donde reunimos libros y textos para entender mejor herramientas, procesos, IA, chatbots y gamificación."
     elif "reto" in m or "actividad" in m or "ejercicio" in m:
         st.session_state.page = "reto"
         st.session_state.reto_actual = random.choice(retos_abiertos)
         return "¡Vamos con toda! Te llevo a un reto breve para poner en práctica lo aprendido."
-    elif "quiz" in m or "pregunta de opción múltiple" in m:
+    elif "quiz" in m:
         st.session_state.page = "quiz"
-        st.session_state.quiz_pregunta = random.choice(quizzes)
-        st.session_state.quiz_respondido = False
-        return "Perfecto. Te abriré un quiz rápido para seguir sumando puntos."
+        return "Perfecto. Te llevaré a un quiz rápido de 5 preguntas para seguir sumando puntos."
     elif "ética" in m or "uso responsable" in m or "manual" in m:
         st.session_state.page = "manual_ia"
         return "Claro. Te llevo al minimanual de uso responsable y ético de la IA para el aprendizaje."
@@ -372,15 +396,12 @@ if st.session_state.page == "inicio":
 elif st.session_state.page == "chat":
     st.title(f"Hola, {st.session_state.nombre or 'estudiante'} 👋")
 
-    # 1. Tema principal
-    st.write(f"### 1. Tema principal")
+    st.write("### 1. Tema principal")
     st.write(f"**{st.session_state.tema}**")
 
-    # 2. Estado inicial
     st.write("### 2. Estado inicial")
     st.write(f"**{st.session_state.estado_animo or 'Sin registrar'}**")
 
-    # 3. Acciones rápidas
     st.write("### 3. Acciones rápidas")
     c1, c2, c3 = st.columns(3)
     if c1.button("¿Qué es la gamificación?"):
@@ -391,7 +412,7 @@ elif st.session_state.page == "chat":
         registrar_interaccion("pregunta_rápida")
         st.rerun()
 
-    if c2.button("¿Cómo ayuda la IA?"):
+    if c2.button("¿Cómo ayuda la IA en educación?"):
         q = "¿Cómo ayuda la IA en educación?"
         st.session_state.chat.append({"role": "user", "content": q})
         st.session_state.chat.append({"role": "assistant", "content": responder(q)})
@@ -426,15 +447,27 @@ elif st.session_state.page == "chat":
         registrar_interaccion("organización")
         st.rerun()
 
-    if c6.button("Hazme un quiz"):
+    if c6.button("Hazme un quiz rápido"):
         q = "Hazme un quiz"
+        st.session_state.quiz_index = 0
+        st.session_state.quiz_score = 0
+        st.session_state.quiz_contestado = False
+        st.session_state.quiz_feedback = ""
         st.session_state.chat.append({"role": "user", "content": q})
         st.session_state.chat.append({"role": "assistant", "content": responder("quiz")})
         recompensar(12, -3)
         registrar_interaccion("quiz")
         st.rerun()
 
-    # 4. Chat bot
+    c7, c8, c9 = st.columns(3)
+    if c7.button("Quiero leer"):
+        q = "Quiero leer"
+        st.session_state.chat.append({"role": "user", "content": q})
+        st.session_state.chat.append({"role": "assistant", "content": responder(q)})
+        recompensar(8, -1)
+        registrar_interaccion("lectura")
+        st.rerun()
+
     st.write("### 4. Chat bot")
     for msg in st.session_state.chat:
         with st.chat_message("assistant" if msg["role"] == "assistant" else "user"):
@@ -448,7 +481,6 @@ elif st.session_state.page == "chat":
         registrar_interaccion("consulta_libre")
         st.rerun()
 
-    # 5. Progreso / analítica / insignias
     st.write("### 5. Seguimiento")
     col_a, col_b, col_c = st.columns(3)
     if col_a.button("Ver progreso"):
@@ -461,7 +493,6 @@ elif st.session_state.page == "chat":
         st.session_state.page = "insignias"
         st.rerun()
 
-    # 6. Recursos especiales
     st.write("### 6. Recursos especiales")
 
     col_r1, col_r2, col_r3 = st.columns(3)
@@ -473,22 +504,19 @@ elif st.session_state.page == "chat":
             st.rerun()
 
     with col_r2:
-        if st.session_state.mostrar_recurso_tiempo:
-            st.success("⏱️ Recurso activado")
-            if st.button("Métodos de productividad para organizar tu tiempo"):
-                st.session_state.page = "manual_tiempo"
-                st.rerun()
-        else:
-            st.caption("Disponible cuando indiques que no organizas tu tiempo.")
+        if st.button("Métodos de productividad para organizar tu tiempo"):
+            st.session_state.page = "manual_tiempo"
+            st.rerun()
 
     with col_r3:
-        if st.session_state.mostrar_recurso_motivacion:
-            st.success("🚀 Recurso activado")
-            if st.button("Manual de técnicas de motivación"):
-                st.session_state.page = "manual_motivacion"
-                st.rerun()
-        else:
-            st.caption("Disponible cuando indiques que tienes poca motivación.")
+        if st.button("Manual de técnicas de motivación"):
+            st.session_state.page = "manual_motivacion"
+            st.rerun()
+
+    with st.expander("📚 Saber más"):
+        st.write("Estos libros y textos te ayudan a entender mejor herramientas, procesos, chatbots, gamificación e inteligencia artificial aplicada al aprendizaje.")
+        for ref in bibliografia_saber_mas:
+            st.write(f"- {ref}")
 
 # =========================================
 # RETO
@@ -508,7 +536,7 @@ elif st.session_state.page == "reto":
             recompensar(25, -5)
             registrar_interaccion("respuesta_reto")
             st.success("¡Excelente! Completaste el reto y ganaste 25 puntos.")
-            st.info("Retroalimentación TiTA: tu respuesta muestra comprensión del tema. El siguiente paso recomendado es complementar esta reflexión con un quiz o una nueva consulta.")
+            st.info("Retroalimentación TiTA: tu respuesta muestra comprensión del tema. El siguiente paso recomendado es complementar esta reflexión con el quiz o una nueva consulta.")
         else:
             st.warning("Necesitas escribir una respuesta antes de enviarla.")
 
@@ -528,36 +556,50 @@ elif st.session_state.page == "reto":
 # =========================================
 elif st.session_state.page == "quiz":
     st.title("🧠 Quiz rápido")
-    if st.session_state.quiz_pregunta is None:
-        st.session_state.quiz_pregunta = random.choice(quizzes)
 
-    pregunta = st.session_state.quiz_pregunta
-    st.write(pregunta["pregunta"])
+    total_preguntas = len(quizzes)
 
-    opcion = st.radio("Selecciona una respuesta", pregunta["opciones"], key="respuesta_quiz")
+    if st.session_state.quiz_index < total_preguntas:
+        pregunta_actual = quizzes[st.session_state.quiz_index]
+        st.write(f"**Pregunta {st.session_state.quiz_index + 1} de {total_preguntas}**")
+        st.write(pregunta_actual["pregunta"])
 
-    if st.button("Enviar quiz"):
-        if opcion == pregunta["correcta"]:
-            recompensar(20, -4)
-            st.success("¡Respuesta correcta! +20 puntos para ti.")
+        opcion = st.radio(
+            "Selecciona una respuesta",
+            pregunta_actual["opciones"],
+            key=f"quiz_radio_{st.session_state.quiz_index}"
+        )
+
+        if not st.session_state.quiz_contestado:
+            if st.button("Responder pregunta"):
+                if opcion == pregunta_actual["correcta"]:
+                    st.session_state.quiz_score += 1
+                    recompensar(10, -2)
+                    st.success("¡Correcta! +10 puntos.")
+                else:
+                    recompensar(3, -1)
+                    st.error("No era esa, pero seguiste participando. +3 puntos.")
+                registrar_interaccion("respuesta_quiz")
+                st.session_state.quiz_feedback = pregunta_actual["retro"]
+                st.session_state.quiz_contestado = True
+                st.rerun()
         else:
-            recompensar(5, -2)
-            st.error("No era esa, pero igual seguiste participando. +5 puntos por intentarlo.")
-        registrar_interaccion("respuesta_quiz")
-        st.info(pregunta["retro"])
-        st.session_state.quiz_respondido = True
-
-    c1, c2, c3 = st.columns(3)
-    if c1.button("Otro quiz"):
-        st.session_state.quiz_pregunta = random.choice(quizzes)
-        st.session_state.quiz_respondido = False
-        st.rerun()
-    if c2.button("Ir al chat desde quiz"):
-        st.session_state.page = "chat"
-        st.rerun()
-    if c3.button("Ver progreso desde quiz"):
-        st.session_state.page = "progreso"
-        st.rerun()
+            st.info(st.session_state.quiz_feedback)
+            if st.button("Siguiente pregunta"):
+                st.session_state.quiz_index += 1
+                st.session_state.quiz_contestado = False
+                st.session_state.quiz_feedback = ""
+                st.rerun()
+    else:
+        st.success(f"Terminaste el quiz. Resultado: {st.session_state.quiz_score}/{total_preguntas}")
+        st.info("Buen trabajo. Este recorrido te ayuda a reforzar conceptos clave de IA, gamificación, aprendizaje autónomo, educación híbrida y uso responsable.")
+        c1, c2 = st.columns(2)
+        if c1.button("Volver al chat desde quiz"):
+            st.session_state.page = "chat"
+            st.rerun()
+        if c2.button("Ver progreso desde quiz"):
+            st.session_state.page = "progreso"
+            st.rerun()
 
 # =========================================
 # PROGRESO
@@ -585,7 +627,7 @@ elif st.session_state.page == "progreso":
     if st.session_state.puntos < 40:
         st.info("Haz dos consultas más y luego completa un reto.")
     elif st.session_state.puntos < 90:
-        st.info("Tu progreso va bien. Ahora conviene combinar un quiz con una consulta abierta.")
+        st.info("Tu progreso va bien. Ahora conviene combinar quiz, consulta abierta y revisión de insignias.")
     else:
         st.info("Ya tienes una participación sólida. El siguiente paso es explorar escalabilidad, analítica del aprendizaje e integración con LMS.")
 
@@ -640,7 +682,7 @@ elif st.session_state.page == "insignias":
 # =========================================
 elif st.session_state.page == "manual_tiempo":
     st.title("⏱️ Métodos de productividad para organizar tu tiempo")
-    st.write("Este recurso reúne técnicas para ayudarte a estudiar con más estructura, menos saturación y mejor gestión de energía.")
+    st.write("Estos métodos te ayudan a estudiar con más estructura, menos saturación y mejor gestión de energía.")
 
     for nombre, info in metodos_productividad.items():
         with st.expander(nombre):
@@ -661,7 +703,7 @@ elif st.session_state.page == "manual_tiempo":
 # =========================================
 elif st.session_state.page == "manual_motivacion":
     st.title("🚀 Manual de técnicas de motivación")
-    st.write("Este recurso reúne estrategias para empezar cuando cuesta arrancar, sostener la atención y hacer visible el progreso.")
+    st.write("Estas técnicas ayudan a empezar cuando cuesta arrancar, sostener la atención y hacer visible el progreso.")
 
     for categoria, tecnicas in manual_motivacion.items():
         st.write(f"### {categoria}")
