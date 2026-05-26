@@ -4,6 +4,63 @@ import random
 st.set_page_config(page_title="TiTA IA", page_icon="🎓", layout="wide")
 
 # =========================================
+# ESTILOS VISUALES
+# =========================================
+st.markdown("""
+<style>
+.bloque-color {
+    padding: 16px 18px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    border-left: 6px solid #6c63ff;
+    background-color: #f4f2ff;
+    color: #2b2b2b;
+}
+.bloque-verde {
+    padding: 16px 18px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    border-left: 6px solid #2e8b57;
+    background-color: #eefaf3;
+    color: #2b2b2b;
+}
+.bloque-azul {
+    padding: 16px 18px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    border-left: 6px solid #2f80ed;
+    background-color: #eef5ff;
+    color: #2b2b2b;
+}
+.bloque-naranja {
+    padding: 16px 18px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    border-left: 6px solid #f2994a;
+    background-color: #fff4ea;
+    color: #2b2b2b;
+}
+.bloque-rosa {
+    padding: 16px 18px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    border-left: 6px solid #d16ba5;
+    background-color: #fff0f7;
+    color: #2b2b2b;
+}
+.titulo-bonito {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.texto-suave {
+    font-size: 0.97rem;
+    line-height: 1.55;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# =========================================
 # ESTADO INICIAL
 # =========================================
 if "page" not in st.session_state:
@@ -45,8 +102,6 @@ if "quiz_index" not in st.session_state:
     st.session_state.quiz_index = 0
 if "quiz_score" not in st.session_state:
     st.session_state.quiz_score = 0
-if "quiz_respuesta_actual" not in st.session_state:
-    st.session_state.quiz_respuesta_actual = None
 if "quiz_feedback" not in st.session_state:
     st.session_state.quiz_feedback = ""
 if "quiz_contestado" not in st.session_state:
@@ -75,7 +130,7 @@ quizzes = [
             "Evitar toda interacción humana"
         ],
         "correcta": "Personalizar respuestas y acompañar al estudiante",
-        "retro": "Correcto. En TiTA IA, la IA interpreta preguntas, genera respuestas contextualizadas y acompaña el proceso del estudiante."
+        "retro": "En TiTA IA, la IA se usa para interpretar preguntas, generar respuestas contextualizadas y ofrecer acompañamiento académico más flexible, inmediato y cercano. No busca reemplazar al docente, sino complementar el proceso educativo."
     },
     {
         "pregunta": "¿Qué elemento corresponde a la gamificación?",
@@ -86,7 +141,7 @@ quizzes = [
             "Desconexión del progreso"
         ],
         "correcta": "Insignias y niveles",
-        "retro": "Muy bien. La gamificación se expresa mediante puntos, niveles, insignias y recompensas visibles."
+        "retro": "La gamificación incorpora dinámicas propias del juego, como puntos, insignias, niveles, retos y recompensas. Estas mecánicas ayudan a aumentar la motivación, hacer visible el avance y fortalecer la continuidad del aprendizaje."
     },
     {
         "pregunta": "¿Qué busca fortalecer TiTA IA principalmente?",
@@ -97,7 +152,7 @@ quizzes = [
             "La reducción del diálogo"
         ],
         "correcta": "El aprendizaje autónomo",
-        "retro": "Exacto. El núcleo del proyecto es fortalecer el aprendizaje autónomo mediante acompañamiento y personalización."
+        "retro": "Uno de los propósitos centrales de TiTA IA es fortalecer el aprendizaje autónomo. Para ello combina orientación en tiempo real, retroalimentación, retos, organización del estudio y seguimiento del progreso."
     },
     {
         "pregunta": "¿Qué aporta la educación híbrida al proyecto?",
@@ -108,7 +163,7 @@ quizzes = [
             "Evita el seguimiento"
         ],
         "correcta": "Combina escenarios presenciales y virtuales",
-        "retro": "Correcto. La educación híbrida amplía el acompañamiento dentro y fuera del aula."
+        "retro": "La educación híbrida permite que TiTA IA acompañe al estudiante tanto en contextos presenciales como virtuales. Esto amplía el acceso al apoyo académico y hace más continua la experiencia de aprendizaje."
     },
     {
         "pregunta": "¿Qué busca el uso responsable de la IA en TiTA IA?",
@@ -119,7 +174,7 @@ quizzes = [
             "Que no exista revisión docente"
         ],
         "correcta": "Que la herramienta apoye sin anular el proceso cognitivo",
-        "retro": "Exactamente. La IA debe ampliar capacidades, no reemplazar el juicio, la reflexión ni el contraste de fuentes."
+        "retro": "El uso responsable de la IA implica que la herramienta apoye, oriente y facilite procesos, pero sin reemplazar la reflexión, el pensamiento crítico, el contraste de fuentes ni la supervisión pedagógica."
     }
 ]
 
@@ -271,24 +326,24 @@ def responder(mensaje):
     if "hola" in m or "buenas" in m:
         return "¡Hola! Qué bueno tenerte aquí. Cuéntame, ¿quieres resolver una duda, hacer un reto o revisar estrategias para estudiar mejor?"
     elif "cómo ayuda la ia" in m or "como ayuda la ia" in m or "ia en educación" in m:
-        return """La IA en educación puede aportar en varios niveles: 
-1) **Personalización**, porque adapta recomendaciones y respuestas según la necesidad del estudiante; 
-2) **Retroalimentación inmediata**, útil para resolver dudas en tiempo real; 
-3) **Acompañamiento continuo**, especialmente en entornos híbridos o virtuales; 
-4) **Organización del aprendizaje**, al sugerir rutas, prioridades y estrategias; 
-5) **Analítica**, al identificar patrones de interacción que luego pueden orientar mejoras pedagógicas. 
+        return """La IA en educación puede aportar en varios niveles:
+1) **Personalización**, porque adapta recomendaciones y respuestas según la necesidad del estudiante;
+2) **Retroalimentación inmediata**, útil para resolver dudas en tiempo real;
+3) **Acompañamiento continuo**, especialmente en entornos híbridos o virtuales;
+4) **Organización del aprendizaje**, al sugerir rutas, prioridades y estrategias;
+5) **Analítica**, al identificar patrones de interacción que luego pueden orientar mejoras pedagógicas.
 
 Su valor no está en reemplazar al docente, sino en ampliar el acceso, ofrecer apoyo oportuno y hacer más flexible la experiencia formativa."""
     elif "gamificación" in m or "gamificacion" in m:
-        return """La gamificación es la incorporación de mecánicas del juego en contextos no lúdicos, como el aprendizaje. 
-En educación, esto puede incluir **puntos, insignias, niveles, retos, metas visibles, recompensas y sensación de progreso**. 
+        return """La gamificación es la incorporación de mecánicas del juego en contextos no lúdicos, como el aprendizaje.
+En educación, esto puede incluir **puntos, insignias, niveles, retos, metas visibles, recompensas y sensación de progreso**.
 
-Su fuerza pedagógica está en varios frentes: 
-1) aumenta la motivación y el compromiso; 
-2) hace visible el avance del estudiante; 
-3) favorece la continuidad y los hábitos; 
-4) transforma tareas que parecen pesadas en experiencias más dinámicas; 
-5) refuerza la participación mediante reconocimiento simbólico. 
+Su fuerza pedagógica está en varios frentes:
+1) aumenta la motivación y el compromiso;
+2) hace visible el avance del estudiante;
+3) favorece la continuidad y los hábitos;
+4) transforma tareas que parecen pesadas en experiencias más dinámicas;
+5) refuerza la participación mediante reconocimiento simbólico.
 
 Además, este mismo entorno usa gamificación con **insignias** para reconocer tu progreso. Si quieres profundizar, puedes revisar la sección **Ver insignias** y también el recurso de **Saber más** al final."""
     elif "aprendizaje adaptativo" in m:
@@ -562,6 +617,7 @@ elif st.session_state.page == "quiz":
     if st.session_state.quiz_index < total_preguntas:
         pregunta_actual = quizzes[st.session_state.quiz_index]
         st.write(f"**Pregunta {st.session_state.quiz_index + 1} de {total_preguntas}**")
+        st.progress((st.session_state.quiz_index + 1) / total_preguntas)
         st.write(pregunta_actual["pregunta"])
 
         opcion = st.radio(
@@ -572,17 +628,34 @@ elif st.session_state.page == "quiz":
 
         if not st.session_state.quiz_contestado:
             if st.button("Responder pregunta"):
-                if opcion == pregunta_actual["correcta"]:
+                respuesta_correcta = pregunta_actual["correcta"]
+
+                if opcion == respuesta_correcta:
                     st.session_state.quiz_score += 1
                     recompensar(10, -2)
+                    st.session_state.quiz_feedback = (
+                        f"✅ **Respuesta correcta:** {respuesta_correcta}\n\n"
+                        f"{pregunta_actual['retro']}\n\n"
+                        "Esta respuesta es correcta porque se alinea con el propósito del prototipo: "
+                        "ofrecer acompañamiento académico, retroalimentación contextualizada y apoyo al aprendizaje autónomo."
+                    )
                     st.success("¡Correcta! +10 puntos.")
                 else:
                     recompensar(3, -1)
-                    st.error("No era esa, pero seguiste participando. +3 puntos.")
+                    st.session_state.quiz_feedback = (
+                        f"❌ **Tu respuesta:** {opcion}\n\n"
+                        f"✅ **La respuesta correcta era:** {respuesta_correcta}\n\n"
+                        f"{pregunta_actual['retro']}\n\n"
+                        "La opción que elegiste no era la más adecuada porque no refleja con precisión "
+                        "el enfoque del proyecto ni las funciones centrales de TiTA IA. "
+                        "La idea es que el quiz no solo evalúe, sino que también te ayude a comprender mejor el concepto."
+                    )
+                    st.error("Respuesta incorrecta. +3 puntos por participar.")
+
                 registrar_interaccion("respuesta_quiz")
-                st.session_state.quiz_feedback = pregunta_actual["retro"]
                 st.session_state.quiz_contestado = True
                 st.rerun()
+
         else:
             st.info(st.session_state.quiz_feedback)
             if st.button("Siguiente pregunta"):
@@ -591,8 +664,22 @@ elif st.session_state.page == "quiz":
                 st.session_state.quiz_feedback = ""
                 st.rerun()
     else:
-        st.success(f"Terminaste el quiz. Resultado: {st.session_state.quiz_score}/{total_preguntas}")
-        st.info("Buen trabajo. Este recorrido te ayuda a reforzar conceptos clave de IA, gamificación, aprendizaje autónomo, educación híbrida y uso responsable.")
+        st.success(f"Terminaste el quiz. Resultado final: {st.session_state.quiz_score}/{total_preguntas}")
+
+        if st.session_state.quiz_score == total_preguntas:
+            st.balloons()
+            st.info("Excelente desempeño. Dominas muy bien los conceptos centrales del prototipo.")
+        elif st.session_state.quiz_score >= 3:
+            st.info("Buen resultado. Tienes una comprensión sólida, aunque todavía puedes reforzar algunos conceptos.")
+        else:
+            st.warning("Terminaste el quiz, pero conviene repasar temas como IA en educación, gamificación y uso responsable antes de seguir avanzando.")
+
+        st.write("### ¿Qué sigue?")
+        st.write(
+            "Puedes volver al chat para resolver dudas, revisar las insignias o consultar los recursos especiales "
+            "para fortalecer tu comprensión de los temas."
+        )
+
         c1, c2 = st.columns(2)
         if c1.button("Volver al chat desde quiz"):
             st.session_state.page = "chat"
@@ -656,18 +743,40 @@ elif st.session_state.page == "insignias":
     if st.session_state.insignias:
         for ins in st.session_state.insignias:
             with st.expander(f"🏅 {ins}"):
-                st.write(f"**¿Qué significa?** {descripciones_insignias[ins]['descripcion']}")
-                st.write(f"**¿Cómo se obtiene?** {descripciones_insignias[ins]['como']}")
-                st.write(f"**¿Qué reconoce?** {descripciones_insignias[ins]['valor']}")
+                st.markdown(f"""
+                <div class="bloque-naranja">
+                    <div class="titulo-bonito">¿Qué significa?</div>
+                    <div class="texto-suave">{descripciones_insignias[ins]['descripcion']}</div>
+                </div>
+                <div class="bloque-verde">
+                    <div class="titulo-bonito">¿Cómo se obtiene?</div>
+                    <div class="texto-suave">{descripciones_insignias[ins]['como']}</div>
+                </div>
+                <div class="bloque-azul">
+                    <div class="titulo-bonito">¿Qué reconoce?</div>
+                    <div class="texto-suave">{descripciones_insignias[ins]['valor']}</div>
+                </div>
+                """, unsafe_allow_html=True)
     else:
         st.info("Aún no has desbloqueado insignias. Sigue interactuando con TiTA para obtenerlas.")
 
     st.write("### Insignias disponibles")
     for nombre, info in descripciones_insignias.items():
-        with st.expander(f"{nombre}"):
-            st.write(f"**Descripción:** {info['descripcion']}")
-            st.write(f"**Cómo se obtiene:** {info['como']}")
-            st.write(f"**Valor pedagógico:** {info['valor']}")
+        with st.expander(f"✨ {nombre}"):
+            st.markdown(f"""
+            <div class="bloque-color">
+                <div class="titulo-bonito">Descripción</div>
+                <div class="texto-suave">{info['descripcion']}</div>
+            </div>
+            <div class="bloque-verde">
+                <div class="titulo-bonito">Cómo se obtiene</div>
+                <div class="texto-suave">{info['como']}</div>
+            </div>
+            <div class="bloque-azul">
+                <div class="titulo-bonito">Valor pedagógico</div>
+                <div class="texto-suave">{info['valor']}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     if c1.button("Volver al chat desde insignias"):
@@ -685,10 +794,21 @@ elif st.session_state.page == "manual_tiempo":
     st.write("Estos métodos te ayudan a estudiar con más estructura, menos saturación y mejor gestión de energía.")
 
     for nombre, info in metodos_productividad.items():
-        with st.expander(nombre):
-            st.write(f"**¿En qué consiste?** {info['descripcion']}")
-            st.write(f"**¿Cuándo usarlo?** {info['cuando_usarlo']}")
-            st.write(f"**Ejemplo práctico:** {info['ejemplo']}")
+        with st.expander(f"⏱️ {nombre}"):
+            st.markdown(f"""
+            <div class="bloque-azul">
+                <div class="titulo-bonito">¿En qué consiste?</div>
+                <div class="texto-suave">{info['descripcion']}</div>
+            </div>
+            <div class="bloque-verde">
+                <div class="titulo-bonito">¿Cuándo usarlo?</div>
+                <div class="texto-suave">{info['cuando_usarlo']}</div>
+            </div>
+            <div class="bloque-naranja">
+                <div class="titulo-bonito">Ejemplo práctico</div>
+                <div class="texto-suave">{info['ejemplo']}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     if c1.button("Volver al chat desde tiempo"):
@@ -706,11 +826,27 @@ elif st.session_state.page == "manual_motivacion":
     st.write("Estas técnicas ayudan a empezar cuando cuesta arrancar, sostener la atención y hacer visible el progreso.")
 
     for categoria, tecnicas in manual_motivacion.items():
-        st.write(f"### {categoria}")
-        for nombre, descripcion in tecnicas:
-            st.markdown(f"- **{nombre}:** {descripcion}")
+        st.markdown(f"""
+        <div class="bloque-color">
+            <div class="titulo-bonito">{categoria}</div>
+            <div class="texto-suave">Explora estas estrategias para activar tu motivación y sostener el estudio.</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.info("Tip TiTA: si te interesa la gamificación, recuerda que este mismo entorno usa insignias como parte del refuerzo positivo. Puedes revisar más en la sección 'Ver insignias'.")
+        for nombre, descripcion in tecnicas:
+            st.markdown(f"""
+            <div class="bloque-rosa">
+                <div class="titulo-bonito">{nombre}</div>
+                <div class="texto-suave">{descripcion}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="bloque-verde">
+        <div class="titulo-bonito">Tip TiTA</div>
+        <div class="texto-suave">Si te interesa la gamificación, recuerda que este mismo entorno usa insignias como parte del refuerzo positivo. Puedes revisar más en la sección "Ver insignias".</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     if c1.button("Volver al chat desde motivación"):
@@ -727,29 +863,61 @@ elif st.session_state.page == "manual_ia":
     st.title("📘 Minimanual de uso responsable y ético de la IA")
     st.write("Este minimanual promueve un uso crítico, humano y ambientalmente consciente de TiTA IA.")
 
-    st.write("### 1. La IA apoya, pero no reemplaza tu pensamiento")
-    st.info("Usa TiTA IA para orientarte, aclarar dudas, practicar y organizarte; no para copiar respuestas sin comprenderlas.")
+    st.markdown("""
+    <div class="bloque-verde">
+        <div class="titulo-bonito">1. La IA apoya, pero no reemplaza tu pensamiento</div>
+        <div class="texto-suave">Usa TiTA IA para orientarte, aclarar dudas, practicar y organizarte; no para copiar respuestas sin comprenderlas.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.write("### 2. Contrasta la información")
-    st.info("Toda respuesta del chatbot debe compararse con tus apuntes, lecturas, fuentes académicas y orientación docente.")
+    st.markdown("""
+    <div class="bloque-azul">
+        <div class="titulo-bonito">2. Contrasta la información</div>
+        <div class="texto-suave">Toda respuesta del chatbot debe compararse con tus apuntes, lecturas, fuentes académicas y orientación docente.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.write("### 3. Mantén tu agencia como estudiante")
-    st.info("La decisión final sobre qué estudiar, cómo interpretarlo y cómo argumentarlo sigue siendo tuya. La IA debe fortalecer tu autonomía, no anularla.")
+    st.markdown("""
+    <div class="bloque-color">
+        <div class="titulo-bonito">3. Mantén tu agencia como estudiante</div>
+        <div class="texto-suave">La decisión final sobre qué estudiar, cómo interpretarlo y cómo argumentarlo sigue siendo tuya. La IA debe fortalecer tu autonomía, no anularla.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.write("### 4. Evita la dependencia excesiva")
-    st.info("No conviertas a TiTA IA en sustituto permanente del análisis, la escritura propia o la reflexión. Úsala como apoyo, no como piloto automático.")
+    st.markdown("""
+    <div class="bloque-rosa">
+        <div class="titulo-bonito">4. Evita la dependencia excesiva</div>
+        <div class="texto-suave">No conviertas a TiTA IA en sustituto permanente del análisis, la escritura propia o la reflexión. Úsala como apoyo, no como piloto automático.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.write("### 5. Sé transparente con su uso")
-    st.info("Si usaste IA para organizar ideas, resumir o practicar, reconócelo cuando sea necesario dentro del contexto académico.")
+    st.markdown("""
+    <div class="bloque-verde">
+        <div class="titulo-bonito">5. Sé transparente con su uso</div>
+        <div class="texto-suave">Si usaste IA para organizar ideas, resumir o practicar, reconócelo cuando sea necesario dentro del contexto académico.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.write("### 6. Cuidado con datos personales")
-    st.info("Evita compartir información sensible, datos privados, contraseñas o contenidos que no deban circular en plataformas digitales.")
+    st.markdown("""
+    <div class="bloque-azul">
+        <div class="titulo-bonito">6. Cuidado con datos personales</div>
+        <div class="texto-suave">Evita compartir información sensible, datos privados, contraseñas o contenidos que no deban circular en plataformas digitales.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.write("### 7. Piensa también en el impacto ambiental")
-    st.warning("La IA funciona sobre infraestructura de centros de datos que consume energía y también agua, especialmente para refrigeración. Por eso conviene usarla con intención, hacer consultas útiles y evitar interacciones innecesarias.")
+    st.markdown("""
+    <div class="bloque-naranja">
+        <div class="titulo-bonito">7. Piensa también en el impacto ambiental</div>
+        <div class="texto-suave">La IA funciona sobre infraestructura de centros de datos que consume energía y también agua, especialmente para refrigeración. Por eso conviene usarla con intención, hacer consultas útiles y evitar interacciones innecesarias.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.write("### 8. Regla TiTA de uso inteligente")
-    st.success("Pregunta con intención, aprende con criterio, contrasta con otras fuentes y conserva siempre tu protagonismo cognitivo.")
+    st.markdown("""
+    <div class="bloque-color">
+        <div class="titulo-bonito">8. Regla TiTA de uso inteligente</div>
+        <div class="texto-suave">Pregunta con intención, aprende con criterio, contrasta con otras fuentes y conserva siempre tu protagonismo cognitivo.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
     if c1.button("Volver al chat desde manual"):
