@@ -128,6 +128,34 @@ descripciones_insignias = {
     }
 }
 
+metodos_productividad = {
+    "Método Flowtime": {
+        "descripcion": "Trabajas de forma continua hasta notar fatiga o distracción, y luego defines la pausa según el tiempo real que estuviste concentrado/a.",
+        "cuando_usarlo": "Es ideal si entras en concentración profunda y no quieres cortar el ritmo con un cronómetro rígido.",
+        "ejemplo": "Si estudiaste 45 minutos con buena concentración, puedes tomar 10 minutos de descanso."
+    },
+    "Método 50/10 o 52/17": {
+        "descripcion": "Consiste en estudiar entre 50 y 52 minutos con concentración total y luego descansar entre 10 y 17 minutos.",
+        "cuando_usarlo": "Sirve mucho para tareas largas, lecturas densas, epígrafes extensos o sesiones universitarias exigentes.",
+        "ejemplo": "50 minutos de lectura crítica + 10 minutos de pausa para moverte, hidratarte o despejarte."
+    },
+    "Técnica 90/20": {
+        "descripcion": "Se basa en ciclos ultradianos: 90 minutos de trabajo intenso seguidos por 20 minutos de descanso real.",
+        "cuando_usarlo": "Es útil para personas con buena capacidad de atención sostenida o cuando necesitas hiperfoco.",
+        "ejemplo": "90 minutos desarrollando un trabajo o estudiando para examen + 20 minutos de desconexión total."
+    },
+    "Técnica 'Solo un poquito' (Kaizen)": {
+        "descripcion": "Consiste en empezar por una meta muy pequeña para reducir la resistencia psicológica al inicio.",
+        "cuando_usarlo": "Es perfecta si estás procrastinando o te cuesta mucho arrancar.",
+        "ejemplo": "Leer una sola página, escribir una idea o estudiar 5 minutos; luego decides si paras o sigues."
+    },
+    "Bloques personalizados": {
+        "descripcion": "Ajustas la duración de las sesiones según tu energía y nivel de cansancio, en vez de usar una sola fórmula fija.",
+        "cuando_usarlo": "Es ideal si ya conoces tus ritmos y quieres combinar bloques largos y cortos estratégicamente.",
+        "ejemplo": "Empiezas con 90 minutos en tu momento de más energía y luego haces bloques de 50 o 25 minutos."
+    }
+}
+
 # =========================================
 # FUNCIONES
 # =========================================
@@ -179,15 +207,6 @@ def recomendacion_del_dia():
     ]
     return random.choice(recomendaciones)
 
-def opciones_motivacion():
-    return {
-        "Plan exprés de 10 minutos": "Empieza con una sola tarea pequeña durante 10 minutos. El objetivo no es terminar todo, sino romper la inercia inicial.",
-        "Organizar prioridades": "Haz una lista con 3 tareas: una urgente, una importante y una corta. Empieza por la más fácil para ganar impulso.",
-        "Meta mínima del día": "Define una meta muy concreta, por ejemplo: leer un apartado, responder una pregunta o completar un reto breve.",
-        "Pausa activa + retorno": "Haz una pausa de 5 minutos, respira, toma agua y vuelve con una sola actividad específica.",
-        "Acompañamiento guiado": "Haz una consulta a TiTA, responde un quiz o completa un reto. La idea es que no estudies en solitario absoluto."
-    }
-
 def responder(mensaje):
     m = mensaje.lower()
 
@@ -206,19 +225,21 @@ def responder(mensaje):
     elif "motivación" in m or "motivar" in m:
         return "Cuando la motivación baja, conviene dividir el estudio en tareas pequeñas, usar refuerzos positivos y visualizar el avance. Ahí TiTA IA puede actuar como acompañante estratégico."
     elif "tiempo" in m or "organización" in m or "organizar" in m:
-        return "Una estrategia útil es trabajar con prioridades, sesiones cortas y metas concretas. La organización también es una habilidad que se entrena."
+        return "Si necesitas organizar tu tiempo, puedo proponerte métodos de productividad como Flowtime, 50/10, 90/20, Kaizen o bloques personalizados. La idea es encontrar una forma de estudiar que funcione contigo y no contra ti."
+    elif "flowtime" in m:
+        return "El método Flowtime te permite estudiar hasta que notes fatiga o distracción y luego descansar según el tiempo real de concentración. Es flexible y muy útil cuando logras entrar en foco profundo."
+    elif "50/10" in m or "52/17" in m:
+        return "Este método propone bloques largos de enfoque y pausas suficientes para recuperarte. Es muy útil para lecturas largas, análisis y tareas universitarias exigentes."
+    elif "90/20" in m:
+        return "La técnica 90/20 se basa en ciclos ultradianos: 90 minutos de trabajo intenso y 20 de descanso real. Funciona mejor si tienes buena capacidad de atención sostenida."
+    elif "kaizen" in m or "solo un poquito" in m:
+        return "La técnica Kaizen busca reducir la resistencia al inicio: empiezas con una meta mínima y luego decides si continúas. Es excelente contra la procrastinación."
+    elif "bloques personalizados" in m:
+        return "Los bloques personalizados te permiten adaptar la duración del estudio a tus momentos de energía. No todos rinden igual con el mismo cronómetro."
     elif "estrés" in m or "estres" in m or "cansado" in m:
         return "Respiremos un poco 😌. Si te sientes saturado, empecemos por algo breve: una duda puntual, un quiz o un reto corto. Avanzar poco también cuenta."
     elif "necesito organizarme" in m or "organizarme" in m:
-        return "Claro. Podemos organizar tu estudio con opciones simples: un plan exprés de 10 minutos, una lista de 3 prioridades, una meta mínima del día o una pausa activa antes de retomar."
-    elif "plan exprés" in m or "10 minutos" in m:
-        return "Plan exprés: elige una sola tarea, trabaja 10 minutos sin interrupciones y termina escribiendo una idea clave. Eso ya es progreso real."
-    elif "prioridades" in m:
-        return "Te propongo priorizar así: 1 tarea urgente, 1 importante y 1 corta. Empieza por la corta para ganar impulso y luego avanza hacia la importante."
-    elif "meta mínima" in m:
-        return "Una meta mínima puede ser leer un apartado, responder una pregunta o completar un quiz. Cuando bajas la barrera de entrada, es más fácil empezar."
-    elif "pausa activa" in m:
-        return "Haz una pausa breve de 5 minutos, estírate, toma agua y vuelve con una sola actividad definida. El descanso también es parte de una buena estrategia."
+        return "Claro. Puedo ayudarte con métodos de productividad como Flowtime, 50/10, 90/20, Kaizen y bloques personalizados. También puedo sugerirte cuál probar según cómo te sientes hoy."
     elif "reto" in m or "actividad" in m or "ejercicio" in m:
         st.session_state.page = "reto"
         st.session_state.reto_actual = random.choice(retos_abiertos)
@@ -228,8 +249,11 @@ def responder(mensaje):
         st.session_state.quiz_pregunta = random.choice(quizzes)
         st.session_state.quiz_respondido = False
         return "Perfecto. Te abriré un quiz rápido para seguir sumando puntos."
+    elif "ética" in m or "uso responsable" in m or "manual" in m:
+        st.session_state.page = "manual_ia"
+        return "Claro. Te llevo al minimanual de uso responsable y ético de la IA para el aprendizaje."
     else:
-        return "Puedo ayudarte con IA en educación, gamificación, aprendizaje adaptativo, aprendizaje autónomo, motivación académica, organización del tiempo y educación híbrida. ¿Por dónde quieres empezar?"
+        return "Puedo ayudarte con IA en educación, gamificación, aprendizaje adaptativo, aprendizaje autónomo, motivación académica, productividad, organización del tiempo, educación híbrida y uso ético de la IA. ¿Por dónde quieres empezar?"
 
 # =========================================
 # SIDEBAR
@@ -250,6 +274,10 @@ else:
 
 st.sidebar.write("### 🎯 Recomendación del día")
 st.sidebar.info(recomendacion_del_dia())
+
+if st.sidebar.button("📘 Minimanual IA"):
+    st.session_state.page = "manual_ia"
+    st.rerun()
 
 # =========================================
 # INICIO
@@ -369,79 +397,18 @@ elif st.session_state.page == "chat":
         registrar_interaccion("quiz")
         st.rerun()
 
-    st.write("### Apoyo cuando falta motivación")
-    m1, m2, m3 = st.columns(3)
-
-    if m1.button("Necesito organizarme"):
-        st.session_state.chat.append({"role": "user", "content": "Necesito organizarme mejor"})
-        st.session_state.chat.append({
-            "role": "assistant",
-            "content": "Claro 💡. Aquí tienes opciones concretas para retomar el estudio: Plan exprés de 10 minutos, Organizar prioridades, Meta mínima del día, Pausa activa + retorno o Acompañamiento guiado. Dime cuál quieres probar."
-        })
-        recompensar(10, -1)
-        registrar_interaccion("apoyo_organizacion")
-        st.rerun()
-
-    if m2.button("Dame opciones para hoy"):
-        st.session_state.chat.append({"role": "user", "content": "Dame opciones para hoy porque me siento desmotivado/a"})
-        st.session_state.chat.append({
-            "role": "assistant",
-            "content": "Hoy no necesitas hacerlo todo; necesitas empezar. Te propongo tres caminos: 1) una tarea de 10 minutos, 2) un reto breve conmigo, 3) organizar tres prioridades. ¿Cuál quieres probar?"
-        })
-        recompensar(10, -1)
-        registrar_interaccion("apoyo_motivacional")
-        st.rerun()
-
-    if m3.button("Quiero un plan breve"):
-        st.session_state.chat.append({"role": "user", "content": "Quiero un plan breve para estudiar"})
-        st.session_state.chat.append({
-            "role": "assistant",
-            "content": "Perfecto. Plan breve sugerido: 1) haz una consulta, 2) toma nota de una idea clave, 3) resuelve un quiz o reto corto, 4) revisa tu progreso. Es pequeño, pero muy poderoso."
-        })
-        recompensar(10, -1)
-        registrar_interaccion("plan_breve")
-        st.rerun()
-
-    st.write("### Estrategias de organización")
-    o1, o2, o3, o4, o5 = st.columns(5)
-
-    if o1.button("Plan exprés"):
-        st.session_state.chat.append({"role": "user", "content": "Quiero aplicar un plan exprés"})
-        st.session_state.chat.append({"role": "assistant", "content": responder("plan exprés")})
-        recompensar(8, -1)
-        registrar_interaccion("plan_expres")
-        st.rerun()
-
-    if o2.button("Prioridades"):
-        st.session_state.chat.append({"role": "user", "content": "Ayúdame con prioridades"})
-        st.session_state.chat.append({"role": "assistant", "content": responder("prioridades")})
-        recompensar(8, -1)
-        registrar_interaccion("prioridades")
-        st.rerun()
-
-    if o3.button("Meta mínima"):
-        st.session_state.chat.append({"role": "user", "content": "Necesito una meta mínima"})
-        st.session_state.chat.append({"role": "assistant", "content": responder("meta mínima")})
-        recompensar(8, -1)
-        registrar_interaccion("meta_minima")
-        st.rerun()
-
-    if o4.button("Pausa activa"):
-        st.session_state.chat.append({"role": "user", "content": "Necesito una pausa activa"})
-        st.session_state.chat.append({"role": "assistant", "content": responder("pausa activa")})
-        recompensar(8, -1)
-        registrar_interaccion("pausa_activa")
-        st.rerun()
-
-    if o5.button("Acompañamiento guiado"):
-        st.session_state.chat.append({"role": "user", "content": "Quiero acompañamiento guiado"})
-        st.session_state.chat.append({
-            "role": "assistant",
-            "content": "Vamos paso a paso 😊. Te propongo este recorrido: 1) haz una pregunta, 2) responde un quiz, 3) completa un reto, 4) revisa tu progreso. Yo te acompaño en cada parte."
-        })
-        recompensar(8, -1)
-        registrar_interaccion("acompanamiento_guiado")
-        st.rerun()
+    st.write("### Métodos de productividad para organizar tu tiempo")
+    for nombre, info in metodos_productividad.items():
+        with st.expander(f"⏱️ {nombre}"):
+            st.write(f"**¿En qué consiste?** {info['descripcion']}")
+            st.write(f"**¿Cuándo usarlo?** {info['cuando_usarlo']}")
+            st.write(f"**Ejemplo práctico:** {info['ejemplo']}")
+            if st.button(f"Quiero probar {nombre}", key=nombre):
+                st.session_state.chat.append({"role": "user", "content": f"Quiero probar {nombre}"})
+                st.session_state.chat.append({"role": "assistant", "content": f"Excelente elección. {info['descripcion']} Mi recomendación es que lo pruebes hoy en una sola sesión y luego revises cómo te sentiste."})
+                recompensar(10, -1)
+                registrar_interaccion(f"metodo_{nombre}")
+                st.rerun()
 
     mensaje_usuario = st.chat_input("Escribe tu pregunta aquí...")
     if mensaje_usuario:
@@ -451,7 +418,7 @@ elif st.session_state.page == "chat":
         registrar_interaccion("consulta_libre")
         st.rerun()
 
-    col_a, col_b, col_c = st.columns(3)
+    col_a, col_b, col_c, col_d = st.columns(4)
     if col_a.button("Ver progreso"):
         st.session_state.page = "progreso"
         st.rerun()
@@ -460,6 +427,9 @@ elif st.session_state.page == "chat":
         st.rerun()
     if col_c.button("Ver insignias"):
         st.session_state.page = "insignias"
+        st.rerun()
+    if col_d.button("Minimanual IA"):
+        st.session_state.page = "manual_ia"
         st.rerun()
 
 # =========================================
@@ -547,14 +517,9 @@ elif st.session_state.page == "progreso":
 
     st.write("### Recomendación personalizada")
     if st.session_state.estado_animo == "Desmotivado/a":
-        st.warning("Te conviene empezar por metas pequeñas, retos breves y consultas de baja complejidad para recuperar la motivación.")
-        st.write("#### Opciones sugeridas para retomar el estudio")
-        st.success("1. Hacer una consulta breve a TiTA")
-        st.success("2. Organizar 3 prioridades")
-        st.success("3. Completar un reto corto")
-        st.success("4. Definir una meta mínima del día")
+        st.warning("Te conviene empezar por metas pequeñas, retos breves y estrategias de organización del tiempo que reduzcan la resistencia al inicio.")
     elif st.session_state.estado_animo == "Cansado/a":
-        st.info("Lo ideal es trabajar en sesiones cortas, alternar teoría y práctica, y evitar la sobrecarga.")
+        st.info("Lo ideal es trabajar en sesiones cortas o intermedias, alternar teoría y práctica, e incorporar pausas reales.")
     else:
         st.success("Tu disposición es favorable. Puedes avanzar a desafíos más complejos y profundizar en temas como analítica o educación híbrida.")
 
@@ -566,14 +531,17 @@ elif st.session_state.page == "progreso":
     else:
         st.info("Ya tienes una participación sólida. El siguiente paso es explorar escalabilidad, analítica del aprendizaje e integración con LMS.")
 
-    c1, c2, c3 = st.columns(3)
+    c1, c2, c3, c4 = st.columns(4)
     if c1.button("Volver al chat"):
         st.session_state.page = "chat"
         st.rerun()
     if c2.button("Ver insignias"):
         st.session_state.page = "insignias"
         st.rerun()
-    if c3.button("Reiniciar demo"):
+    if c3.button("Ver minimanual IA"):
+        st.session_state.page = "manual_ia"
+        st.rerun()
+    if c4.button("Reiniciar demo"):
         for k in list(st.session_state.keys()):
             del st.session_state[k]
         st.rerun()
@@ -610,42 +578,33 @@ elif st.session_state.page == "insignias":
         st.rerun()
 
 # =========================================
-# ANALÍTICA
+# MANUAL IA
 # =========================================
-elif st.session_state.page == "analitica":
-    st.title("📈 Analítica básica del aprendizaje")
-    st.write("Esta vista simula el seguimiento inicial del comportamiento del estudiante dentro del prototipo.")
+elif st.session_state.page == "manual_ia":
+    st.title("📘 Minimanual de uso responsable y ético de la IA")
+    st.write("Este minimanual promueve un uso crítico, humano y ambientalmente consciente de TiTA IA.")
 
-    st.metric("Total de interacciones", st.session_state.interacciones)
-    st.metric("Puntos obtenidos", st.session_state.puntos)
-    st.metric("Nivel alcanzado", st.session_state.nivel)
+    st.write("### 1. La IA apoya, pero no reemplaza tu pensamiento")
+    st.info("Usa TiTA IA para orientarte, aclarar dudas, practicar y organizarte; no para copiar respuestas sin comprenderlas.")
 
-    st.write("### Historial de interacción")
-    if st.session_state.historial:
-        conteo = {}
-        for item in st.session_state.historial:
-            conteo[item] = conteo.get(item, 0) + 1
+    st.write("### 2. Contrasta la información")
+    st.info("Toda respuesta del chatbot debe compararse con tus apuntes, lecturas, fuentes académicas y orientación docente.")
 
-        for k, v in conteo.items():
-            st.write(f"- {k}: {v}")
-    else:
-        st.info("Aún no hay suficientes interacciones para mostrar datos.")
+    st.write("### 3. Mantén tu agencia como estudiante")
+    st.info("La decisión final sobre qué estudiar, cómo interpretarlo y cómo argumentarlo sigue siendo tuya. La IA debe fortalecer tu autonomía, no anularla.")
 
-    st.write("### Interpretación")
-    if st.session_state.interacciones < 3:
-        st.info("El estudiante presenta una exploración inicial. Se recomienda motivar más consultas y actividades breves.")
-    elif st.session_state.interacciones < 7:
-        st.info("El estudiante muestra participación moderada. Conviene fortalecer el seguimiento con retos y retroalimentación continua.")
-    else:
-        st.success("El estudiante evidencia una participación activa. El sistema podría escalar hacia un módulo más robusto de analítica del aprendizaje.")
+    st.write("### 4. Evita la dependencia excesiva")
+    st.info("No conviertas a TiTA IA en sustituto permanente del análisis, la escritura propia o la reflexión. Úsala como apoyo, no como piloto automático.")
 
-    st.write("### Proyección")
-    st.write("En una versión futura, este módulo podría conectarse con LMS, tableros docentes y reglas adaptativas más complejas.")
+    st.write("### 5. Sé transparente con su uso")
+    st.info("Si usaste IA para organizar ideas, resumir o practicar, reconócelo cuando sea necesario dentro del contexto académico.")
 
-    c1, c2 = st.columns(2)
-    if c1.button("Volver al chat desde analítica"):
-        st.session_state.page = "chat"
-        st.rerun()
-    if c2.button("Ir al progreso desde analítica"):
-        st.session_state.page = "progreso"
-        st.rerun()
+    st.write("### 6. Cuidado con datos personales")
+    st.info("Evita compartir información sensible, datos privados, contraseñas o contenidos que no deban circular en plataformas digitales.")
+
+    st.write("### 7. Piensa también en el impacto ambiental")
+    st.warning("La IA funciona sobre infraestructura de centros de datos que consume energía y también agua, especialmente para refrigeración. Distintos análisis y reportes recientes advierten que el crecimiento de la IA está incrementando el uso hídrico de los data centers y exige una gestión más responsable de ese impacto.")
+    st.caption("Idea clave: usar IA de forma responsable también implica evitar interacciones innecesarias, pedir tareas concretas y aprovechar mejor cada consulta.")
+
+    st.write("### 8. Regla TiTA de uso inteligente")
+    st.success("Pregunta con 
